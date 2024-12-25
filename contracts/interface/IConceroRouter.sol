@@ -6,6 +6,7 @@ interface IConceroRouter {
     error InvalidReceiver();
     error MessageTooLarge();
     error InvalidDstChainGasLimit();
+    error InvalidDstChainSelector();
 
     /* TYPES */
     struct MessageRequest {
@@ -28,4 +29,12 @@ interface IConceroRouter {
     struct EvmArgs {
         uint32 dstChainGasLimit;
     }
+
+    enum ClfReqType {
+        Empty,
+        SendUnconfirmedMessage
+    }
+
+    /* EVENTS */
+    event ConceroMessageSent();
 }
