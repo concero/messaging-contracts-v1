@@ -90,7 +90,7 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
         _sendUnconfirmedMessage(messageId, messageHash, messageReq.dstChainSelector);
     }
 
-    function getFee(MessageRequest memory message) external returns (uint256) {
+    function getFee(MessageRequest memory message) external view returns (uint256) {
         _validateMessage(message);
         return _getFee(message);
     }
@@ -142,6 +142,9 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
         clfReqArgs[7] = abi.encodePacked(messageHash);
 
         bytes32 clfReqId = _initializeAndSendClfRequest(clfReqArgs, CLF_SRC_CALLBACK_GAS_LIMIT);
+
+        s_clfRequests[clfReqId].reqType = ClfReqType.SendUnconfirmedMessage;
+        s_clfRequests[clfReqId].isPending = true;
     }
 
     function _initializeAndSendClfRequest(
@@ -155,9 +158,61 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
         return _sendRequest(req.encodeCBOR(), i_clfSubId, gasLimit, i_clfDonId);
     }
 
+    // solhint-disable-next-line chainlink-solidity/prefix-internal-functions-with-underscore
     function fulfillRequest(
         bytes32 clfReqId,
         bytes memory response,
         bytes memory err
-    ) internal override {}
+    ) internal override {
+        ClfRequest storage clfRequest = s_clfRequests[clfReqId];
+
+        if (!clfRequest.isPending) {
+            revert UnexpectedCLFRequestId();
+        } else {
+            clfRequest.isPending = false;
+        }
+
+        if (err.length != 0) {
+            emit CLFRequestError(clfRequest.conceroMessageId, clfRequest.reqType);
+            return;
+        }
+
+        ClfReqType clfReqType = clfRequest.reqType;
+        if (clfReqType == ClfReqType.SendUnconfirmedMessage) {
+            _handleSendUnconfirmedMessageResponse(response);
+        } else {
+            revert UnknownClfReqType();
+        }
+    }
+
+    function _handleSendUnconfirmedMessageResponse(bytes memory response) internal {
+        (
+            uint256 dstGasPrice,
+            uint256 srcGasPrice,
+            uint64 dstChainSelector,
+            uint256 linkUsdcRate,
+            uint256 nativeUsdcRate,
+            uint256 linkNativeRate
+        ) = abi.decode(response, (uint256, uint256, uint64, uint256, uint256, uint256));
+
+        if (srcGasPrice != 0) {
+            s_lastGasPrices[i_chainSelector] = srcGasPrice;
+        }
+
+        if (dstGasPrice != 0) {
+            s_lastGasPrices[dstChainSelector] = dstGasPrice;
+        }
+
+        if (linkUsdcRate != 0) {
+            s_latestLinkUsdcRate = linkUsdcRate;
+        }
+
+        if (nativeUsdcRate != 0) {
+            s_latestNativeUsdcRate = nativeUsdcRate;
+        }
+
+        if (linkNativeRate != 0) {
+            s_latestLinkNativeRate = linkNativeRate;
+        }
+    }
 }

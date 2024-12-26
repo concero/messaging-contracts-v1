@@ -7,6 +7,8 @@ interface IConceroRouter {
     error MessageTooLarge();
     error InvalidDstChainGasLimit();
     error InvalidDstChainSelector();
+    error UnexpectedCLFRequestId();
+    error UnknownClfReqType();
 
     /* TYPES */
     struct MessageRequest {
@@ -35,6 +37,13 @@ interface IConceroRouter {
         SendUnconfirmedMessage
     }
 
+    struct ClfRequest {
+        ClfReqType reqType;
+        bool isPending;
+        bytes32 conceroMessageId;
+    }
+
     /* EVENTS */
     event ConceroMessageSent();
+    event CLFRequestError(bytes32 indexed conceroMessageId, ClfReqType reqType);
 }

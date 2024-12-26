@@ -1,3 +1,5 @@
+pragma solidity 0.8.28;
+
 // mainnet
 uint64 constant CHAIN_SELECTOR_ARBITRUM = 4949039107694359620;
 uint64 constant CHAIN_SELECTOR_BASE = 15971525489660198786;
