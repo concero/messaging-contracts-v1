@@ -6,9 +6,14 @@ interface IConceroRouter {
     error InvalidReceiver();
     error MessageTooLarge();
     error InvalidDstChainGasLimit();
-    error InvalidDstChainSelector();
+    error InvalidChainSelector();
     error UnexpectedCLFRequestId();
     error UnknownClfReqType();
+    error NotMessenger();
+    error TxAlreadyExists();
+    error MessageDoesntExist();
+    error MessageAlreadyConfirmed();
+    error MessageDataHashMismatch();
 
     /* TYPES */
     struct MessageRequest {
@@ -23,18 +28,10 @@ interface IConceroRouter {
         uint32 dstChainGasLimit;
     }
 
-    enum ClfReqType {
-        Empty,
-        SendUnconfirmedMessage
-    }
-
-    struct ClfRequest {
-        ClfReqType reqType;
-        bytes32 conceroMessageId;
-    }
-
     /* EVENTS */
     event ConceroMessageSent();
     event ConfirmMessageClfReqError(bytes32 indexed conceroMessageId);
     event SendUnconfirmedMessageClfReqError(bytes32 indexed clfReqid);
+    event UnconfirmedMessageReceived(bytes32 indexed conceroMessageId);
+    event MessageReceived(bytes32 indexed conceroMessageId);
 }

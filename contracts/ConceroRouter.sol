@@ -1,11 +1,12 @@
 pragma solidity 0.8.28;
 
-import {ConceroRouterStorage} from "./storage/ConceroRouterStorage.sol";
+import {ConceroRouterStorage} from "./storages/ConceroRouterStorage.sol";
 import {FunctionsClient as ClfClient} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/FunctionsClient.sol";
 import {FunctionsRequest} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/libraries/FunctionsRequest.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {IConceroRouter} from "./interface/IConceroRouter.sol";
+import {IConceroRouter} from "./interfaces/IConceroRouter.sol";
+import {IConceroClient} from "./ConceroClient/interfaces/IConceroClient.sol";
 
 contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
     using SafeERC20 for IERC20;
@@ -30,8 +31,9 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
     uint64 internal immutable i_clfDonHostedSecretsVersion;
     uint64 internal immutable i_clfSubId;
     bytes32 internal immutable i_clfDonId;
-    bytes32 internal immutable i_srcJsHash;
-    bytes32 internal immutable i_ethersJsHash;
+    bytes32 internal immutable i_clfSrcJsHash;
+    bytes32 internal immutable i_clfDstJsHash;
+    bytes32 internal immutable i_clfEthersJsHash;
 
     constructor(
         address usdc,
@@ -42,8 +44,9 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
         uint64 clfDonHostedSecretsVersion,
         uint64 clfSubId,
         bytes32 clfDonId,
-        bytes32 srcJsHash,
-        bytes32 ethersJsHash
+        bytes32 clfSrcJsHash,
+        bytes32 clfDstJsHash,
+        bytes32 clfEthersJsHash
     ) ClfClient(clfRouter) {
         i_usdc = usdc;
         i_chainSelector = chainSelector;
@@ -56,8 +59,18 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
         i_clfDonHostedSecretsVersion = clfDonHostedSecretsVersion;
         i_clfSubId = clfSubId;
         i_clfDonId = clfDonId;
-        i_srcJsHash = srcJsHash;
-        i_ethersJsHash = ethersJsHash;
+        i_clfSrcJsHash = clfSrcJsHash;
+        i_clfDstJsHash = clfDstJsHash;
+        i_clfEthersJsHash = clfEthersJsHash;
+    }
+
+    /* MODIFIERS */
+
+    modifier onlyMessenger() {
+        if (msg.sender != i_msgr0 && msg.sender != i_msgr1 && msg.sender != i_msgr2) {
+            revert NotMessenger();
+        }
+        _;
     }
 
     /* EXTERNAL FUNCTIONS */
@@ -95,6 +108,41 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
         return _getFee(message);
     }
 
+    function receiveUnconfirmedMessage(
+        bytes32 messageId,
+        uint64 srcChainSelector,
+        bytes32 messageHash
+    ) external onlyMessenger {
+        if (s_messageHashById[messageId] != bytes32(0)) {
+            revert TxAlreadyExists();
+        } else {
+            s_messageHashById[messageId] = messageHash;
+        }
+
+        address srcConceroRouter = s_dstConceroRouterByChain[srcChainSelector];
+        if (srcConceroRouter == address(0)) {
+            revert InvalidChainSelector();
+        }
+
+        bytes[] memory clfReqArgs = new bytes[](7);
+        clfReqArgs[0] = abi.encodePacked(i_clfDstJsHash);
+        clfReqArgs[1] = abi.encodePacked(i_clfEthersJsHash);
+        clfReqArgs[2] = abi.encodePacked(ClfReqType.ConfirmMessage);
+        clfReqArgs[3] = abi.encodePacked(srcConceroRouter);
+        clfReqArgs[4] = abi.encodePacked(srcChainSelector);
+        clfReqArgs[5] = abi.encodePacked(messageId);
+        clfReqArgs[6] = abi.encodePacked(messageHash);
+
+        bytes32 clfReqId = _initializeAndSendClfRequest(clfReqArgs, CLF_DST_CALLBACK_GAS_LIMIT);
+
+        s_clfRequests[clfReqId].reqType = ClfReqType.ConfirmMessage;
+        s_clfRequests[clfReqId].conceroMessageId = messageId;
+
+        s_isClfReqPending[clfReqId] = true;
+
+        emit UnconfirmedMessageReceived(messageId);
+    }
+
     /* INTERNAL FUNCTIONS */
 
     function _validateMessage(MessageRequest memory message) internal view {
@@ -128,12 +176,12 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
         address dstConceroRouter = s_dstConceroRouterByChain[dstChainSelector];
 
         if (dstConceroRouter == address(0)) {
-            revert InvalidDstChainSelector();
+            revert InvalidChainSelector();
         }
 
         bytes[] memory clfReqArgs = new bytes[](8);
-        clfReqArgs[0] = abi.encodePacked(i_srcJsHash);
-        clfReqArgs[1] = abi.encodePacked(i_ethersJsHash);
+        clfReqArgs[0] = abi.encodePacked(i_clfSrcJsHash);
+        clfReqArgs[1] = abi.encodePacked(i_clfEthersJsHash);
         clfReqArgs[2] = abi.encodePacked(ClfReqType.SendUnconfirmedMessage);
         clfReqArgs[3] = abi.encodePacked(dstConceroRouter);
         clfReqArgs[4] = abi.encodePacked(messageId);
@@ -182,13 +230,59 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
 
         ClfReqType clfReqType = clfRequest.reqType;
         if (clfReqType == ClfReqType.SendUnconfirmedMessage) {
-            _handleSendUnconfirmedMessageResponse(response);
+            _handleSendUnconfirmedMessageClfResp(response);
+        } else if (clfReqType == ClfReqType.ConfirmMessage) {
+            _handleConfirmMessageClfResp(clfRequest.conceroMessageId, response);
         } else {
             revert UnknownClfReqType();
         }
     }
 
-    function _handleSendUnconfirmedMessageResponse(bytes memory response) internal {
+    function _handleConfirmMessageClfResp(
+        bytes32 conceroMessageId,
+        bytes memory response
+    ) internal {
+        bytes32 conceroMessageHash = s_messageHashById[conceroMessageId];
+        if (conceroMessageHash == bytes32(0)) {
+            revert MessageDoesntExist();
+        }
+
+        if (!s_isMessageConfirmed[conceroMessageId]) {
+            s_isMessageConfirmed[conceroMessageId] = true;
+        } else {
+            revert MessageAlreadyConfirmed();
+        }
+
+        (
+            address receiver,
+            address sender,
+            uint64 srcChainSelector,
+            bytes memory messageData
+        ) = _decodeConfirmMessageClfResp(response);
+
+        {
+            bytes32 recomputedMessageHash = keccak256(
+                abi.encode(conceroMessageId, i_chainSelector, receiver, keccak256(messageData))
+            );
+
+            if (recomputedMessageHash != conceroMessageId) {
+                revert MessageDataHashMismatch();
+            }
+        }
+
+        IConceroClient(receiver).conceroReceive(
+            IConceroClient.Message({
+                id: conceroMessageId,
+                srcChainSelector: srcChainSelector,
+                sender: sender,
+                data: messageData
+            })
+        );
+
+        emit MessageReceived(conceroMessageId);
+    }
+
+    function _handleSendUnconfirmedMessageClfResp(bytes memory response) internal {
         (
             uint256 dstGasPrice,
             uint256 srcGasPrice,
@@ -216,6 +310,32 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
 
         if (linkNativeRate != 0) {
             s_latestLinkNativeRate = linkNativeRate;
+        }
+    }
+
+    function _decodeConfirmMessageClfResp(
+        bytes memory response
+    )
+        internal
+        pure
+        returns (
+            address receiver,
+            address sender,
+            uint64 srcChainSelector,
+            bytes memory messageData
+        )
+    {
+        assembly {
+            receiver := mload(add(response, 32))
+        }
+
+        if (response.length > 32) {
+            uint256 messageDataLength = response.length - 32;
+            messageData = new bytes(messageDataLength);
+
+            for (uint256 i; i < messageDataLength; i++) {
+                messageData[i] = response[32 + i];
+            }
         }
     }
 }
