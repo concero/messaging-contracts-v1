@@ -19,15 +19,6 @@ interface IConceroRouter {
         bytes data;
     }
 
-    struct Message {
-        uint64 srcChainSelector;
-        uint64 dstChainSelector;
-        address receiver;
-        address sender;
-        bytes extraArgs;
-        bytes data;
-    }
-
     struct EvmArgs {
         uint32 dstChainGasLimit;
     }
@@ -39,11 +30,11 @@ interface IConceroRouter {
 
     struct ClfRequest {
         ClfReqType reqType;
-        bool isPending;
         bytes32 conceroMessageId;
     }
 
     /* EVENTS */
     event ConceroMessageSent();
-    event CLFRequestError(bytes32 indexed conceroMessageId, ClfReqType reqType);
+    event ConfirmMessageClfReqError(bytes32 indexed conceroMessageId);
+    event SendUnconfirmedMessageClfReqError(bytes32 indexed clfReqid);
 }

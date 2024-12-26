@@ -13,6 +13,7 @@ contract ConceroRouterStorage {
 
     // @dev clf mappings
     mapping(bytes32 clfReqId => IConceroRouter.ClfRequest clfRequest) internal s_clfRequests;
+    mapping(bytes32 clfReqId => bool isPending) internal s_isClfReqPending;
 
     // @dev price feed mappings
     mapping(uint64 chainSelector => uint256 gasPrice) internal s_lastGasPrices;

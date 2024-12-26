@@ -17,7 +17,7 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
     uint32 internal constant CLF_SRC_CALLBACK_GAS_LIMIT = 150_000;
     uint32 internal constant CLF_DST_CALLBACK_GAS_LIMIT = 2_000_000;
     string internal constant CLF_JS_CODE =
-        "try{const m='https://raw.githubusercontent.com/';const u=m+'ethers-io/ethers.js/v6.10.0/dist/ethers.umd.min.js';const [t,p]=await Promise.all([ fetch(u),fetch(m+'concero/contracts-v1/'+'release'+`/tasks/CLFScripts/dist/infra/${BigInt(bytesArgs[2])===1n ? 'DST':'SRC'}.min.js`,),]);const [e,c]=await Promise.all([t.text(),p.text()]);const g=async s=>{return('0x'+Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))).map(v=>('0'+v.toString(16)).slice(-2).toLowerCase()).join(''));};const r=await g(c);const x=await g(e);const b=bytesArgs[0].toLowerCase();const o=bytesArgs[1].toLowerCase();if(r===b && x===o){const ethers=new Function(e+';return ethers;')();return await eval(c);}throw new Error(`${r}!=${b}||${x}!=${o}`);}catch(e){throw new Error(e.message.slice(0,255));}";
+        "try{const m='https://raw.githubusercontent.com/';const u=m+'ethers-io/ethers.js/v6.10.0/dist/ethers.umd.min.js';const [t,p]=await Promise.all([ fetch(u),fetch(m+'concero/messaging-contracts-v1/'+'release'+`/clf/dist/${BigInt(bytesArgs[2])===1n ? 'src':'dst'}.min.js`,),]);const [e,c]=await Promise.all([t.text(),p.text()]);const g=async s=>{return('0x'+Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))).map(v=>('0'+v.toString(16)).slice(-2).toLowerCase()).join(''));};const r=await g(c);const x=await g(e);const b=bytesArgs[0].toLowerCase();const o=bytesArgs[1].toLowerCase();if(r===b && x===o){const ethers=new Function(e+';return ethers;')();return await eval(c);}throw new Error(`${r}!=${b}||${x}!=${o}`);}catch(e){throw new Error(e.message.slice(0,255));}";
 
     /* IMMUTABLE VARIABLES */
     address internal immutable i_usdc;
@@ -144,7 +144,7 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
         bytes32 clfReqId = _initializeAndSendClfRequest(clfReqArgs, CLF_SRC_CALLBACK_GAS_LIMIT);
 
         s_clfRequests[clfReqId].reqType = ClfReqType.SendUnconfirmedMessage;
-        s_clfRequests[clfReqId].isPending = true;
+        s_isClfReqPending[clfReqId] = true;
     }
 
     function _initializeAndSendClfRequest(
@@ -164,16 +164,19 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
         bytes memory response,
         bytes memory err
     ) internal override {
-        ClfRequest storage clfRequest = s_clfRequests[clfReqId];
-
-        if (!clfRequest.isPending) {
-            revert UnexpectedCLFRequestId();
+        if (s_isClfReqPending[clfReqId]) {
+            s_isClfReqPending[clfReqId] = false;
         } else {
-            clfRequest.isPending = false;
+            revert UnexpectedCLFRequestId();
         }
 
+        ClfRequest storage clfRequest = s_clfRequests[clfReqId];
+
         if (err.length != 0) {
-            emit CLFRequestError(clfRequest.conceroMessageId, clfRequest.reqType);
+            if (clfRequest.reqType == ClfReqType.SendUnconfirmedMessage) {
+                emit SendUnconfirmedMessageClfReqError(clfReqId);
+            }
+
             return;
         }
 
