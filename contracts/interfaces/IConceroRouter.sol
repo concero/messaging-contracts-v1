@@ -20,7 +20,7 @@ interface IConceroRouter {
         address feeToken;
         address receiver;
         uint64 dstChainSelector;
-        bytes extraArgs;
+        uint32 dstChainGasLimit;
         bytes data;
     }
 
@@ -29,7 +29,13 @@ interface IConceroRouter {
     }
 
     /* EVENTS */
-    event ConceroMessageSent();
+    event ConceroMessageSent(
+        bytes32 indexed messageId,
+        address sender,
+        address receiver,
+        bytes extraArgs,
+        bytes data
+    );
     event ConfirmMessageClfReqError(bytes32 indexed conceroMessageId);
     event SendUnconfirmedMessageClfReqError(bytes32 indexed clfReqid);
     event UnconfirmedMessageReceived(bytes32 indexed conceroMessageId);
