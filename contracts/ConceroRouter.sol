@@ -77,7 +77,7 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
     /* EXTERNAL FUNCTIONS */
 
     function sendMessage(MessageRequest memory messageReq) external {
-        _validateMessage(messageReq);
+        _validateMessageReq(messageReq);
 
         uint256 fee = _getFee(messageReq);
         IERC20(messageReq.feeToken).safeTransferFrom(msg.sender, address(this), fee);
@@ -116,7 +116,7 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
     }
 
     function getFee(MessageRequest memory message) external view returns (uint256) {
-        _validateMessage(message);
+        _validateMessageReq(message);
         return _getFee(message);
     }
 
@@ -158,7 +158,7 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
 
     /* INTERNAL FUNCTIONS */
 
-    function _validateMessage(MessageRequest memory message) internal view {
+    function _validateMessageReq(MessageRequest memory message) internal view {
         if (message.feeToken != i_usdc) {
             revert UnsupportedFeeToken();
         }
