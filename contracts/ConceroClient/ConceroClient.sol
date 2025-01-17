@@ -5,7 +5,7 @@ import {IConceroClient} from "./interfaces/IConceroClient.sol";
 error InvalidConceroRouter(address router);
 
 abstract contract ConceroClient is IConceroClient {
-    address internal immutable i_conceroRouter;
+    address private immutable i_conceroRouter;
 
     modifier onlyRouter() {
         if (msg.sender != i_conceroRouter) {
@@ -28,6 +28,10 @@ abstract contract ConceroClient is IConceroClient {
 
     function conceroReceive(Message calldata message) external onlyRouter {
         _conceroReceive(message);
+    }
+
+    function getConceroRouter() public view returns (address) {
+        return i_conceroRouter;
     }
 
     function _conceroReceive(Message calldata message) internal virtual;
