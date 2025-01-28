@@ -7,13 +7,6 @@ error InvalidConceroRouter(address router);
 abstract contract ConceroClient is IConceroClient {
     address private immutable i_conceroRouter;
 
-    modifier onlyRouter() {
-        if (msg.sender != i_conceroRouter) {
-            revert InvalidConceroRouter(msg.sender);
-        }
-        _;
-    }
-
     constructor(address router) {
         if (router == address(0)) {
             revert InvalidConceroRouter(router);
@@ -26,7 +19,11 @@ abstract contract ConceroClient is IConceroClient {
         i_conceroRouter = router;
     }
 
-    function conceroReceive(Message calldata message) external onlyRouter {
+    function conceroReceive(Message calldata message) external {
+        if (msg.sender != i_conceroRouter) {
+            revert InvalidConceroRouter(msg.sender);
+        }
+
         _conceroReceive(message);
     }
 
