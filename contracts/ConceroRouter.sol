@@ -81,7 +81,7 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
     function sendMessage(MessageRequest calldata messageReq) external {
         _validateMessageReq(messageReq);
 
-        uint256 fee = _getFee(messageReq);
+        uint256 fee = _getFee(messageReq.dstChainSelector);
         IERC20(messageReq.feeToken).safeTransferFrom(msg.sender, address(this), fee);
 
         bytes32 messageId = keccak256(
@@ -117,9 +117,8 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
         );
     }
 
-    function getFee(MessageRequest calldata message) external view returns (uint256) {
-        _validateMessageReq(message);
-        return _getFee(message);
+    function getFee(uint64 dstChainSelector) external view returns (uint256) {
+        return _getFee(dstChainSelector);
     }
 
     function receiveUnconfirmedMessage(
@@ -184,8 +183,7 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
         }
     }
 
-    function _getFee(MessageRequest calldata message) internal view returns (uint256) {
-        uint64 dstChainSelector = message.dstChainSelector;
+    function _getFee(uint64 dstChainSelector) internal view returns (uint256) {
         uint256 functionsFeeInUsdc = getFunctionsFeeInUsdc(dstChainSelector);
 
         uint256 messengerDstGasInNative = HALF_DST_GAS * s_lastGasPrices[dstChainSelector];
