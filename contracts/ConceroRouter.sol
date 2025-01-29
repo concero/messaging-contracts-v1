@@ -78,7 +78,7 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
 
     /* EXTERNAL FUNCTIONS */
 
-    function sendMessage(MessageRequest memory messageReq) external {
+    function sendMessage(MessageRequest calldata messageReq) external {
         _validateMessageReq(messageReq);
 
         uint256 fee = _getFee(messageReq);
@@ -117,7 +117,7 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
         );
     }
 
-    function getFee(MessageRequest memory message) external view returns (uint256) {
+    function getFee(MessageRequest calldata message) external view returns (uint256) {
         _validateMessageReq(message);
         return _getFee(message);
     }
@@ -166,7 +166,7 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
 
     /* INTERNAL FUNCTIONS */
 
-    function _validateMessageReq(MessageRequest memory message) internal view {
+    function _validateMessageReq(MessageRequest calldata message) internal view {
         if (message.feeToken != i_usdc) {
             revert UnsupportedFeeToken();
         }
@@ -184,7 +184,7 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
         }
     }
 
-    function _getFee(MessageRequest memory message) internal view returns (uint256) {
+    function _getFee(MessageRequest calldata message) internal view returns (uint256) {
         uint64 dstChainSelector = message.dstChainSelector;
         uint256 functionsFeeInUsdc = getFunctionsFeeInUsdc(dstChainSelector);
 
