@@ -18,6 +18,8 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
     uint32 internal constant MAX_MESSAGE_SIZE = 949;
     uint32 internal constant CLF_SRC_CALLBACK_GAS_LIMIT = 150_000;
     uint32 internal constant CLF_DST_CALLBACK_GAS_LIMIT = 2_000_000;
+    uint64 internal constant HALF_DST_GAS = 200_000;
+    uint256 internal constant STANDARD_TOKEN_DECIMALS = 1e18;
     string internal constant CLF_JS_CODE =
         "try{const m='https://raw.githubusercontent.com/';const u=m+'ethers-io/ethers.js/v6.10.0/dist/ethers.umd.min.js';const [t,p]=await Promise.all([ fetch(u),fetch(m+'concero/messaging-contracts-v1/'+'release'+`/clf/dist/${BigInt(bytesArgs[2])===1n ? 'src':'dst'}.min.js`,),]);const [e,c]=await Promise.all([t.text(),p.text()]);const g=async s=>{return('0x'+Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))).map(v=>('0'+v.toString(16)).slice(-2).toLowerCase()).join(''));};const r=await g(c);const x=await g(e);const b=bytesArgs[0].toLowerCase();const o=bytesArgs[1].toLowerCase();if(r===b && x===o){const ethers=new Function(e+';return ethers;')();return await eval(c);}throw new Error(`${r}!=${b}||${x}!=${o}`);}catch(e){throw new Error(e.message.slice(0,255));}";
 
@@ -156,6 +158,12 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
         emit UnconfirmedMessageReceived(messageId);
     }
 
+    /* PUBLIC FUNCTIONS */
+
+    function getFunctionsFeeInUsdc(uint64 dstChainSelector) public view returns (uint256) {
+        return s_clfPremiumFees[dstChainSelector] + s_clfPremiumFees[i_chainSelector];
+    }
+
     /* INTERNAL FUNCTIONS */
 
     function _validateMessageReq(MessageRequest memory message) internal view {
@@ -176,8 +184,16 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
         }
     }
 
-    function _getFee(MessageRequest memory /*message*/) internal pure returns (uint256) {
-        return 0.01 * 10e6;
+    function _getFee(MessageRequest memory message) internal view returns (uint256) {
+        uint64 dstChainSelector = message.dstChainSelector;
+        uint256 functionsFeeInUsdc = getFunctionsFeeInUsdc(dstChainSelector);
+
+        uint256 messengerDstGasInNative = HALF_DST_GAS * s_lastGasPrices[dstChainSelector];
+        uint256 messengerSrcGasInNative = HALF_DST_GAS * s_lastGasPrices[i_chainSelector];
+        uint256 messengerGasFeeInUsdc = ((messengerDstGasInNative + messengerSrcGasInNative) *
+            s_latestNativeUsdcRate) / STANDARD_TOKEN_DECIMALS;
+
+        return functionsFeeInUsdc + messengerGasFeeInUsdc;
     }
 
     function _sendUnconfirmedMessage(
