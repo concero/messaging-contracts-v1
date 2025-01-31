@@ -1,3 +1,4 @@
-import { conceroNetworks } from "./conceroNetworks";
+import { conceroNetworks, networkEnvKeys } from "./conceroNetworks";
+import { envPrefixes } from "./deploymentVariables";
 
-export { conceroNetworks };
+export { conceroNetworks, envPrefixes, networkEnvKeys };
