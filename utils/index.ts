@@ -1,3 +1,3 @@
-import { getEnvVar } from "./getEnvVar";
+import { getEnvAddress, getEnvVar } from "./getEnvVar";
 
-export { getEnvVar };
+export { getEnvVar, getEnvAddress };

@@ -1,10 +1,12 @@
 import { Deployment } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import conceroNetworks from "../constants/conceroNetworks";
-import { getEnvVar, updateEnvAddress } from "../utils";
+import { getEnvVar } from "../utils";
 import log from "../utils/log";
 import { IProxyType } from "../types/deploymentVariables";
 import { getGasParameters } from "../utils/getGasPrice";
+import { updateEnvAddress } from "../utils/updateEnvVariable";
+import { CNetworkNames } from "../types/CNetwork";
 
 const deployProxyAdmin: (hre: HardhatRuntimeEnvironment, proxyType: IProxyType) => Promise<void> = async function (
     hre: HardhatRuntimeEnvironment,
@@ -12,9 +14,9 @@ const deployProxyAdmin: (hre: HardhatRuntimeEnvironment, proxyType: IProxyType) 
 ) {
     const { proxyDeployer } = await hre.getNamedAccounts();
     const { deploy } = hre.deployments;
-    const { name, live } = hre.network;
+    const { live } = hre.network;
+    const name = hre.network.name as CNetworkNames;
     const networkType = conceroNetworks[name].type;
-
     const initialOwner = getEnvVar(`PROXY_DEPLOYER_ADDRESS`);
     const { maxFeePerGas, maxPriorityFeePerGas } = await getGasParameters(conceroNetworks[name]);
 
@@ -24,8 +26,8 @@ const deployProxyAdmin: (hre: HardhatRuntimeEnvironment, proxyType: IProxyType) 
         args: [initialOwner],
         log: true,
         autoMine: true,
-        maxFeePerGas,
-        maxPriorityFeePerGas,
+        maxFeePerGas: maxFeePerGas.toString(),
+        maxPriorityFeePerGas: maxPriorityFeePerGas.toString(),
     })) as Deployment;
 
     if (live) {
