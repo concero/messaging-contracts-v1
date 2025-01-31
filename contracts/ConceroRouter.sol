@@ -162,7 +162,7 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
 
     /* PUBLIC FUNCTIONS */
 
-    function getFunctionsFeeInUsdc(uint64 dstChainSelector) public view returns (uint256) {
+    function getClfFeeInUsdc(uint64 dstChainSelector) public view returns (uint256) {
         return s_clfPremiumFees[dstChainSelector] + s_clfPremiumFees[i_chainSelector];
     }
 
@@ -187,7 +187,7 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
     }
 
     function _getFee(uint64 dstChainSelector) internal view returns (uint256) {
-        uint256 functionsFeeInUsdc = getFunctionsFeeInUsdc(dstChainSelector);
+        uint256 functionsFeeInUsdc = getClfFeeInUsdc(dstChainSelector);
 
         uint256 messengerDstGasInNative = HALF_DST_GAS * s_lastGasPrices[dstChainSelector];
         uint256 messengerSrcGasInNative = HALF_DST_GAS * s_lastGasPrices[i_chainSelector];
