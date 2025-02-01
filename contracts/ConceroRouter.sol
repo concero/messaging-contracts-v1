@@ -10,7 +10,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {IConceroRouter} from "./interfaces/IConceroRouter.sol";
 import {IConceroClient} from "./ConceroClient/interfaces/IConceroClient.sol";
 
-contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
+contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
     using SafeERC20 for IERC20;
     using FunctionsRequest for FunctionsRequest.Request;
 
@@ -22,7 +22,8 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
     uint32 internal constant CLF_DST_CALLBACK_GAS_LIMIT = 2_000_000;
     uint64 internal constant HALF_DST_GAS = 200_000;
     uint256 internal constant STANDARD_TOKEN_DECIMALS = 1e18;
-    uint256 internal constant CONCERO_MESSAGE_FEE = 1e6;
+    uint256 internal constant USDC_DECIMALS = 1e6;
+    uint256 internal constant CONCERO_MESSAGE_FEE_IN_USDC = 0.1e6;
     string internal constant CLF_JS_CODE =
         "try{const m='https://raw.githubusercontent.com/';const u=m+'ethers-io/ethers.js/v6.10.0/dist/ethers.umd.min.js';const [t,p]=await Promise.all([ fetch(u),fetch(m+'concero/messaging-contracts-v1/'+'release'+`/clf/dist/${BigInt(bytesArgs[2])===1n ? 'src':'dst'}.min.js`,),]);const [e,c]=await Promise.all([t.text(),p.text()]);const g=async s=>{return('0x'+Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))).map(v=>('0'+v.toString(16)).slice(-2).toLowerCase()).join(''));};const r=await g(c);const x=await g(e);const b=bytesArgs[0].toLowerCase();const o=bytesArgs[1].toLowerCase();if(r===b && x===o){const ethers=new Function(e+';return ethers;')();return await eval(c);}throw new Error(`${r}!=${b}||${x}!=${o}`);}catch(e){throw new Error(e.message.slice(0,255));}";
 
@@ -84,7 +85,7 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
     function sendMessage(MessageRequest calldata messageReq) external returns (bytes32) {
         _validateMessageReq(messageReq);
 
-        uint256 fee = _getFee(messageReq.dstChainSelector);
+        uint256 fee = _getFeeInUsdc(messageReq.dstChainSelector);
         IERC20(messageReq.feeToken).safeTransferFrom(msg.sender, address(this), fee);
 
         bytes32 messageId = keccak256(
@@ -122,8 +123,8 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
         return messageId;
     }
 
-    function getFee(uint64 dstChainSelector) external view returns (uint256) {
-        return _getFee(dstChainSelector);
+    function getFeeInUsdc(uint64 dstChainSelector) external view returns (uint256) {
+        return _getFeeInUsdc(dstChainSelector);
     }
 
     function receiveUnconfirmedMessage(
@@ -164,10 +165,6 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
 
     /* PUBLIC FUNCTIONS */
 
-    function getClfFeeInUsdc(uint64 dstChainSelector) public view returns (uint256) {
-        return s_clfPremiumFees[dstChainSelector] + s_clfPremiumFees[i_chainSelector];
-    }
-
     /* INTERNAL FUNCTIONS */
 
     function _validateMessageReq(MessageRequest calldata message) internal view {
@@ -188,15 +185,17 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
         }
     }
 
-    function _getFee(uint64 dstChainSelector) internal view returns (uint256) {
-        uint256 functionsFeeInUsdc = getClfFeeInUsdc(dstChainSelector);
+    function _getFeeInUsdc(uint64 dstChainSelector) internal view returns (uint256) {
+        uint256 clfFeeInUsdc = s_clfFeesInUsdc[dstChainSelector] + s_clfFeesInUsdc[i_chainSelector];
 
         uint256 messengerDstGasInNative = HALF_DST_GAS * s_lastGasPrices[dstChainSelector];
         uint256 messengerSrcGasInNative = HALF_DST_GAS * s_lastGasPrices[i_chainSelector];
-        uint256 messengerGasFeeInUsdc = ((messengerDstGasInNative + messengerSrcGasInNative) *
-            s_latestNativeUsdcRate) / STANDARD_TOKEN_DECIMALS;
+        uint256 messengerGasFeeInUsdc = _convertToUsdcDecimals(
+            ((messengerDstGasInNative + messengerSrcGasInNative) * s_latestNativeUsdcRate) /
+                STANDARD_TOKEN_DECIMALS
+        );
 
-        return functionsFeeInUsdc + messengerGasFeeInUsdc + CONCERO_MESSAGE_FEE;
+        return clfFeeInUsdc + messengerGasFeeInUsdc + CONCERO_MESSAGE_FEE_IN_USDC;
     }
 
     function _sendUnconfirmedMessage(
@@ -378,5 +377,9 @@ contract ConceroRouter is IConceroRouter, ClfClient, ConceroRouterStorage {
                 messageData[i] = response[32 + i];
             }
         }
+    }
+
+    function _convertToUsdcDecimals(uint256 amount) internal pure returns (uint256) {
+        return (amount * USDC_DECIMALS) / STANDARD_TOKEN_DECIMALS;
     }
 }
