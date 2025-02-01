@@ -34,9 +34,9 @@ async function deployConceroRouter(params: DeployInfraParams) {
     const isTestnet = deployableChains[0].type === "testnet";
 
     if (deployProxy) {
-        await deployProxyAdmin(hre, ProxyEnum.infraProxy);
-        await deployTransparentProxy(hre, ProxyEnum.infraProxy);
-        const [proxyAddress] = getEnvAddress(ProxyEnum.infraProxy, name);
+        await deployProxyAdmin(hre, ProxyEnum.conceroRouterProxy);
+        await deployTransparentProxy(hre, ProxyEnum.conceroRouterProxy);
+        const [proxyAddress] = getEnvAddress(ProxyEnum.conceroRouterProxy, name);
         const { functionsSubIds } = conceroNetworks[name];
         if (!functionsSubIds) throw new Error(`No functionsSubIds found for ${name}`);
         await addClfConsumer(conceroNetworks[name], [proxyAddress], Number(functionsSubIds[0]));
@@ -44,7 +44,7 @@ async function deployConceroRouter(params: DeployInfraParams) {
 
     if (deployImplementation) {
         await deployConceroRouterImplementation(hre, params);
-        await upgradeProxyImplementation(hre, ProxyEnum.infraProxy, false);
+        await upgradeProxyImplementation(hre, false);
     }
 
     if (uploadSecrets) {

@@ -1,30 +1,27 @@
-import { getEnvAddress } from "../../utils/getEnvVar";
+import { getEnvAddress } from "../../utils";
 import conceroNetworks from "../../constants/conceroNetworks";
 import { privateKeyToAccount } from "viem/accounts";
-import log, { err } from "../../utils/log";
+import log from "../../utils/log";
 import { task } from "hardhat/config";
-import { ProxyEnum, viemReceiptConfig, writeContractConfig } from "../../constants/deploymentVariables";
+import { envPrefixes, ProxyEnum, viemReceiptConfig, writeContractConfig } from "../../constants/deploymentVariables";
 import { formatGas } from "../../utils/formatting";
-import { EnvPrefixes, IProxyType } from "../../types/deploymentVariables";
+import { EnvPrefixes } from "../../types/deploymentVariables";
+import { getFallbackClients } from "../../utils/getViemClients";
+import { CNetworkNames } from "../../types/CNetwork";
 
-export async function upgradeProxyImplementation(hre, proxyType: IProxyType, shouldPause: boolean) {
-    const { name: chainName } = hre.network;
+export async function upgradeProxyImplementation(hre, shouldPause: boolean) {
+    const chainName = hre.network.name as CNetworkNames;
     const { viemChain } = conceroNetworks[chainName];
 
     let implementationKey: keyof EnvPrefixes;
 
     if (shouldPause) {
-        implementationKey = "pause";
-    } else if (proxyType === ProxyEnum.infraProxy) {
-        implementationKey = "orchestrator";
-    } else if (proxyType === ProxyEnum.childPoolProxy) {
-        implementationKey = "childPool";
-    } else if (proxyType === ProxyEnum.parentPoolProxy) {
-        implementationKey = "parentPool";
+        implementationKey = envPrefixes.pause;
     } else {
-        err(`Proxy type ${proxyType} not found`, "upgradeProxyImplementation", chainName);
-        return;
+        implementationKey = ProxyEnum.conceroRouterProxy;
     }
+
+    const proxyType = ProxyEnum.conceroRouterProxy;
 
     const { abi: proxyAdminAbi } = await import(
         "../../artifacts/contracts/proxy/TransparentProxyAdmin.sol/TransparentProxyAdmin.json"

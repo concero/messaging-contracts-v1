@@ -8,42 +8,25 @@ export const messengers: string[] = [
     getEnvVar("MESSENGER_1_ADDRESS"),
     getEnvVar("MESSENGER_2_ADDRESS"),
 ];
-export const poolMessengers: string[] = [
-    getEnvVar("POOL_MESSENGER_0_ADDRESS"),
-    getEnvVar("POOL_MESSENGER_0_ADDRESS"),
-    getEnvVar("POOL_MESSENGER_0_ADDRESS"),
-];
 
 export const viemReceiptConfig: WaitForTransactionReceiptParameters = {
     timeout: 0,
     confirmations: 2,
 };
+
 export const writeContractConfig: WriteContractParameters = {
     gas: 3000000n, // 3M
 };
+
 export enum ProxyEnum {
-    infraProxy = "infraProxy",
-    parentPoolProxy = "parentPoolProxy",
-    childPoolProxy = "childPoolProxy",
+    conceroRouterProxy = "conceroRouterProxy",
 }
 
 export const envPrefixes: EnvPrefixes = {
-    infraProxy: "CONCERO_INFRA_PROXY",
-    infraProxyAdmin: "CONCERO_INFRA_PROXY_ADMIN",
-    bridge: "CONCERO_BRIDGE",
-    dexSwap: "CONCERO_DEX_SWAP",
-    orchestrator: "CONCERO_ORCHESTRATOR",
-    parentPoolProxy: "PARENT_POOL_PROXY",
-    parentPoolProxyAdmin: "PARENT_POOL_PROXY_ADMIN",
-    parentPool: "PARENT_POOL",
-    childPoolProxy: "CHILD_POOL_PROXY",
-    childPoolProxyAdmin: "CHILD_POOL_PROXY_ADMIN",
-    childPool: "CHILD_POOL",
-    automation: "CONCERO_AUTOMATION",
-    lpToken: "LPTOKEN",
+    conceroRouterProxy: "CONCERO_ROUTER_PROXY",
+    conceroRouterProxyAdmin: "CONCERO_ROUTER_PROXY_ADMIN",
     create3Factory: "CREATE3_FACTORY",
     pause: "CONCERO_PAUSE",
-    uniswapRouter: "UNISWAP_ROUTER",
     poolMessenger0: "POOL_MESSENGER_0_ADDRESS",
     poolMessenger1: "POOL_MESSENGER_1_ADDRESS",
     poolMessenger2: "POOL_MESSENGER_2_ADDRESS",

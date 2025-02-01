@@ -4,7 +4,8 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { Address } from "viem";
 import { getEthersSignerAndProvider } from "../../utils/getEthersSignerAndProvider";
 import { conceroNetworks } from "../../constants";
-import { warn } from "../../utils/log";
+import { err, log, warn } from "../../utils/log";
+import { shorten } from "../../utils/formatting";
 
 export async function addClfConsumer(chain: CNetwork, consumerAddresses: Address[], subscriptionId: number) {
     const { linkToken, functionsRouter, confirmations, name } = chain;

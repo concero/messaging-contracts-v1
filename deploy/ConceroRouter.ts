@@ -4,7 +4,7 @@ import { conceroNetworks, networkEnvKeys } from "../constants/conceroNetworks";
 import updateEnvVariable from "../utils/updateEnvVariable";
 import log from "../utils/log";
 import { getEnvVar } from "../utils";
-import { poolMessengers } from "../constants/deploymentVariables";
+import { messengers } from "../constants/deploymentVariables";
 import { getGasParameters } from "../utils/getGasPrice";
 import getHashSum from "../utils/getHashSum";
 import { ethersV6CodeUrl, infraDstJsCodeUrl, infraSrcJsCodeUrl } from "../constants/functionsJsCodeUrls";
@@ -25,6 +25,9 @@ const deployConceroRouterImplementation: (
     hre: HardhatRuntimeEnvironment,
     constructorArgs?: ConstructorArgs,
 ) => Promise<void> = async function (hre: HardhatRuntimeEnvironment, constructorArgs: ConstructorArgs = {}) {
+    if (constructorArgs.slotId === undefined) {
+        throw new Error("slotid is required for deployConceroRouter");
+    }
     const { deployer } = await hre.getNamedAccounts();
     const { deploy } = hre.deployments;
     const { name, live } = hre.network;
@@ -37,18 +40,18 @@ const deployConceroRouterImplementation: (
         functionsRouter: clfRouter,
         donHostedSecretsVersion: clfDonHostedSecretsVersion,
         functionsSubIds,
-        functionsDonIdAlias,
+        functionsDonId,
     } = conceroNetworks[name];
     const defaultArgs = {
         chainSelector,
         usdc: getEnvVar(`USDC_${networkEnvKeys[name]}`),
         owner: deployer,
-        poolMessengers,
+        messengers,
         clfRouter,
-        clfDonHostedSecretsSlotId: constructorArgs.slotid,
+        clfDonHostedSecretsSlotId: constructorArgs.slotId,
         clfDonHostedSecretsVersion,
         clfSubId: functionsSubIds[0],
-        clfDonId: functionsDonIdAlias,
+        clfDonId: functionsDonId,
         clfSrcJsHash: getHashSum(clfSrcCode),
         clfDstJsHash: getHashSum(clfDstCode),
         clfEthersJsHash: getHashSum(clfEthersCode),
@@ -63,7 +66,7 @@ const deployConceroRouterImplementation: (
         args: [
             args.chainSelector,
             args.usdc,
-            args.poolMessengers,
+            args.messengers,
             args.clfRouter,
             args.clfDonHostedSecretsSlotId,
             args.clfDonHostedSecretsVersion,
