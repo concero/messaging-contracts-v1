@@ -167,22 +167,22 @@ contract DeployHelper is Script {
         return vm.envAddress("CL_CCIP_ROUTER_BASE");
     }
 
-    function getClfSecretsSlotId() public view returns (uint8) {
+    function getClfSecretsSlotId() public pure returns (uint8) {
         // @dev doesn't matter for forge tests
         return uint8(0);
     }
 
-    function getClfSecretsVersion() public view returns (uint64) {
+    function getClfSecretsVersion() public pure returns (uint64) {
         // @dev doesn't matter for forge tests
         return uint64(0);
     }
 
-    function getClfSrcJsHash() public view returns (bytes32) {
+    function getClfSrcJsHash() public pure returns (bytes32) {
         // @dev doesn't matter for forge tests
         return bytes32(0);
     }
 
-    function getClfDstJsHash() public view returns (bytes32) {
+    function getClfDstJsHash() public pure returns (bytes32) {
         // @dev doesn't matter for forge tests
         return bytes32(0);
     }

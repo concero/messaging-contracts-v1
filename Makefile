@@ -33,7 +33,10 @@ test:
 	forge test $(args)
 
 gas_snapshot:
-	forge snapshot
+	forge snapshot $(args)
+
+coverage:
+	forge coverage $(args)
 
 .PHONY: all test
 

@@ -50,4 +50,8 @@ contract ConceroRouterHarness is ConceroRouter {
     function exposed_setClfFeesInUsdc(uint64 chainSelector, uint256 fee) external {
         s_clfFeesInUsdc[chainSelector] = fee;
     }
+
+    function exposed_getMaxMessageDataSize() external pure returns (uint256) {
+        return MAX_MESSAGE_SIZE;
+    }
 }

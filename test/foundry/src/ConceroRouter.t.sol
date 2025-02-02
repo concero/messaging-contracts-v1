@@ -6,6 +6,7 @@ import {ConceroRouter} from "contracts/ConceroRouter.sol";
 import {IConceroRouter} from "contracts/interfaces/IConceroRouter.sol";
 import {ConceroRouterHarness} from "../harnesses/ConceroRouterHarness.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {Vm} from "forge-std/src/Vm.sol";
 
 contract ConceroRouterTest is Test {
     /* CONSTANTS */
@@ -67,7 +68,8 @@ contract ConceroRouterTest is Test {
         uint256 feeInUsdc = s_conceroRouter.getFeeInUsdc(s_arbChainSelector);
         IERC20(s_usdcBase).approve(address(s_conceroRouter), feeInUsdc);
 
-        // @dev check only data without indexed id
+        //         @dev check only data without indexed id
+        vm.pauseGasMetering();
         vm.expectEmit(false, false, false, true, address(s_conceroRouter));
         emit IConceroRouter.ConceroMessageSent(
             bytes32(0),
@@ -76,6 +78,7 @@ contract ConceroRouterTest is Test {
             abi.encode(IConceroRouter.EvmArgs({dstChainGasLimit: dstChainGasLimit})),
             messageData
         );
+        vm.resumeGasMetering();
 
         bytes32 messageId = s_conceroRouter.sendMessage(messageReq);
         vm.stopPrank();
@@ -83,5 +86,22 @@ contract ConceroRouterTest is Test {
 
         uint256 clientBalanceAfter = IERC20(s_usdcBase).balanceOf(client);
         assertEq(clientBalanceBefore - feeInUsdc, clientBalanceAfter);
+        vm.resumeGasMetering();
+    }
+
+    function test_sendMessageInvalidMessageDataSize_revert() public {
+        address client = makeAddr("client");
+        uint256 messageSize = s_conceroRouter.exposed_getMaxMessageDataSize() + 1;
+
+        IConceroRouter.MessageRequest memory messageReq = IConceroRouter.MessageRequest({
+            feeToken: s_usdcBase,
+            receiver: client,
+            dstChainSelector: s_arbChainSelector,
+            dstChainGasLimit: 1000000,
+            data: new bytes(messageSize)
+        });
+
+        vm.expectRevert(IConceroRouter.MessageTooLarge.selector);
+        s_conceroRouter.sendMessage(messageReq);
     }
 }

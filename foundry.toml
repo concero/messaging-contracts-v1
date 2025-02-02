@@ -4,6 +4,7 @@ src = "contracts"
 out = "foundry-artifacts"
 cache_path = "cache/foundry"
 test = "test/foundry"
+coverage = "contracts"
 
 libs = ["node_modules", "./contracts/"]
 allow_paths = ["node_modules", "./contracts/"]
