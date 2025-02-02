@@ -121,6 +121,44 @@ contract ConceroRouterTest is Test {
         assertEq(s_conceroRouter.exposed_getConceroMessageIdByClfReqId(clfReqId), conceroMessageId);
     }
 
+    function test_handleOracleFulfillmentWithError() public {
+        bytes32 clfReqId = keccak256("clf req id");
+        bytes memory response = new bytes(0);
+        bytes memory err = new bytes(1);
+
+        s_conceroRouter.exposed_setClfReqTypeByClfReqId(
+            clfReqId,
+            IConceroRouterStorage.ClfReqType.ConfirmMessage
+        );
+
+        vm.prank(s_conceroRouter.exposed_getClfRouter());
+        FunctionsClient(address(s_conceroRouter)).handleOracleFulfillment(clfReqId, response, err);
+
+        assertEq(
+            uint8(s_conceroRouter.exposed_getClfReqTypeByClfReqId(clfReqId)),
+            uint8(IConceroRouterStorage.ClfReqType.Empty)
+        );
+    }
+
+    //    function test_handleOracleFulfillment() public {
+    //        bytes32 clfReqId = keccak256("clf req id");
+    //        bytes memory response = new bytes(0);
+    //        bytes memory err = new bytes(0);
+    //
+    //        s_conceroRouter.exposed_setClfReqTypeByClfReqId(
+    //            clfReqId,
+    //            IConceroRouterStorage.ClfReqType.ConfirmMessage
+    //        );
+    //
+    //        vm.prank(s_conceroRouter.exposed_getClfRouter());
+    //        FunctionsClient(address(s_conceroRouter)).handleOracleFulfillment(clfReqId, response, err);
+    //
+    //        assertEq(
+    //            uint8(s_conceroRouter.exposed_getClfReqTypeByClfReqId(clfReqId)),
+    //            uint8(IConceroRouterStorage.ClfReqType.Empty)
+    //        );
+    //    }
+
     /* REVERT TESTS */
 
     function test_sendMessageInvalidMessageDataSize_revert() public {
@@ -269,5 +307,15 @@ contract ConceroRouterTest is Test {
         vm.startPrank(s_conceroRouter.exposed_getMessenger0());
         vm.expectRevert(IConceroRouter.InvalidChainSelector.selector);
         s_conceroRouter.receiveUnconfirmedMessage(conceroMessageId, uint64(0), conceroMessageHash);
+    }
+
+    function test_handleOracleFulfillmentUnexpectedReqId_revert() public {
+        bytes32 clfReqId = keccak256("clf req id");
+        bytes memory response = new bytes(0);
+        bytes memory err = new bytes(0);
+
+        vm.startPrank(s_conceroRouter.exposed_getClfRouter());
+        vm.expectRevert(IConceroRouter.UnexpectedCLFRequestId.selector);
+        FunctionsClient(address(s_conceroRouter)).handleOracleFulfillment(clfReqId, response, err);
     }
 }

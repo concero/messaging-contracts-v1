@@ -31,6 +31,8 @@ contract ConceroRouterHarness is ConceroRouter {
         )
     {}
 
+    /* SETTERS */
+
     function exposed_setLastGasPrice(uint64 dstChainSelector, uint256 gasPrice) external {
         s_lastGasPrices[dstChainSelector] = gasPrice;
     }
@@ -50,6 +52,19 @@ contract ConceroRouterHarness is ConceroRouter {
     function exposed_setClfFeesInUsdc(uint64 chainSelector, uint256 fee) external {
         s_clfFeesInUsdc[chainSelector] = fee;
     }
+
+    function exposed_setClfReqTypeByClfReqId(bytes32 reqId, ClfReqType reqType) external {
+        s_clfReqTypeByClfReqId[reqId] = reqType;
+    }
+
+    function exposed_setConceroMessageIdByClfReqId(
+        bytes32 reqId,
+        bytes32 conceroMessageId
+    ) external {
+        s_conceroMessageIdByClfReqId[reqId] = conceroMessageId;
+    }
+
+    /* GETTERS */
 
     function exposed_getMaxMessageDataSize() external pure returns (uint256) {
         return MAX_MESSAGE_SIZE;
@@ -87,5 +102,9 @@ contract ConceroRouterHarness is ConceroRouter {
         bytes32 conceroMessageId
     ) external view returns (bytes32) {
         return s_messageHashByConceroMessageId[conceroMessageId];
+    }
+
+    function exposed_getClfRouter() external view returns (address) {
+        return address(i_router);
     }
 }

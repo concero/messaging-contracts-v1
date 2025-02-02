@@ -41,7 +41,7 @@ interface IConceroRouter {
         bytes data
     );
     event ConfirmMessageClfReqError(bytes32 indexed conceroMessageId);
-    event SendUnconfirmedMessageClfReqError(bytes32 indexed clfReqid);
+    event ClfReqFailed(bytes32 indexed clfReqid, uint8, bytes error);
     event UnconfirmedMessageReceived(bytes32 indexed conceroMessageId);
     event MessageReceived(bytes32 indexed conceroMessageId);
 }

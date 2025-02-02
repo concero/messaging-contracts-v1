@@ -275,20 +275,16 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
             revert UnexpectedCLFRequestId();
         }
 
-        if (err.length != 0) {
+        if (err.length == 0) {
             if (clfReqType == ClfReqType.SendUnconfirmedMessage) {
-                emit SendUnconfirmedMessageClfReqError(clfReqId);
+                _handleSendUnconfirmedMessageClfResp(response);
+            } else if (clfReqType == ClfReqType.ConfirmMessage) {
+                _handleConfirmMessageClfResp(s_conceroMessageIdByClfReqId[clfReqId], response);
+            } else {
+                revert UnknownClfReqType();
             }
-
-            return;
-        }
-
-        if (clfReqType == ClfReqType.SendUnconfirmedMessage) {
-            _handleSendUnconfirmedMessageClfResp(response);
-        } else if (clfReqType == ClfReqType.ConfirmMessage) {
-            _handleConfirmMessageClfResp(s_conceroMessageIdByClfReqId[clfReqId], response);
         } else {
-            revert UnknownClfReqType();
+            emit ClfReqFailed(clfReqId, uint8(clfReqType), err);
         }
     }
 
