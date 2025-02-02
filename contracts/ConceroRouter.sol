@@ -164,10 +164,8 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
 
         bytes32 clfReqId = _initializeAndSendClfRequest(clfReqArgs, CLF_DST_CALLBACK_GAS_LIMIT);
 
-        s_clfRequests[clfReqId].reqType = ClfReqType.ConfirmMessage;
-        s_clfRequests[clfReqId].conceroMessageId = messageId;
-
-        s_isClfReqPending[clfReqId] = true;
+        s_clfReqTypeById[clfReqId] = ClfReqType.ConfirmMessage;
+        s_conceroMessageIdByClfReqId[clfReqId] = messageId;
 
         emit UnconfirmedMessageReceived(messageId);
     }
@@ -241,8 +239,7 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
 
         bytes32 clfReqId = _initializeAndSendClfRequest(clfReqArgs, CLF_SRC_CALLBACK_GAS_LIMIT);
 
-        s_clfRequests[clfReqId].reqType = ClfReqType.SendUnconfirmedMessage;
-        s_isClfReqPending[clfReqId] = true;
+        s_clfReqTypeById[clfReqId] = ClfReqType.SendUnconfirmedMessage;
     }
 
     function _initializeAndSendClfRequest(
@@ -262,27 +259,26 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
         bytes memory response,
         bytes memory err
     ) internal override {
-        if (s_isClfReqPending[clfReqId]) {
-            s_isClfReqPending[clfReqId] = false;
+        ClfReqType clfReqType = s_clfReqTypeById[clfReqId];
+
+        if (clfReqType != ClfReqType.Empty) {
+            s_clfReqTypeById[clfReqId] = ClfReqType.Empty;
         } else {
             revert UnexpectedCLFRequestId();
         }
 
-        ClfRequest storage clfRequest = s_clfRequests[clfReqId];
-
         if (err.length != 0) {
-            if (clfRequest.reqType == ClfReqType.SendUnconfirmedMessage) {
+            if (clfReqType == ClfReqType.SendUnconfirmedMessage) {
                 emit SendUnconfirmedMessageClfReqError(clfReqId);
             }
 
             return;
         }
 
-        ClfReqType clfReqType = clfRequest.reqType;
         if (clfReqType == ClfReqType.SendUnconfirmedMessage) {
             _handleSendUnconfirmedMessageClfResp(response);
         } else if (clfReqType == ClfReqType.ConfirmMessage) {
-            _handleConfirmMessageClfResp(clfRequest.conceroMessageId, response);
+            _handleConfirmMessageClfResp(s_conceroMessageIdByClfReqId[clfReqId], response);
         } else {
             revert UnknownClfReqType();
         }

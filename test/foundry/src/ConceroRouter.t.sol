@@ -50,6 +50,9 @@ contract ConceroRouterTest is Test {
         vm.pauseGasMetering();
         address client = makeAddr("client");
         deal(s_usdcBase, client, 1_000_000 * USDC_DECIMALS);
+        uint256 clientBalanceBefore = IERC20(s_usdcBase).balanceOf(client);
+        uint32 dstChainGasLimit = 1_000_000;
+        bytes memory messageData = new bytes(1);
         vm.startPrank(client);
         vm.resumeGasMetering();
 
@@ -57,13 +60,28 @@ contract ConceroRouterTest is Test {
             feeToken: s_usdcBase,
             receiver: client,
             dstChainSelector: s_arbChainSelector,
-            dstChainGasLimit: 1_000_000,
-            data: new bytes(1)
+            dstChainGasLimit: dstChainGasLimit,
+            data: messageData
         });
 
         uint256 feeInUsdc = s_conceroRouter.getFeeInUsdc(s_arbChainSelector);
         IERC20(s_usdcBase).approve(address(s_conceroRouter), feeInUsdc);
-        s_conceroRouter.sendMessage(messageReq);
+
+        // @dev check only data without indexed id
+        vm.expectEmit(false, false, false, true, address(s_conceroRouter));
+        emit IConceroRouter.ConceroMessageSent(
+            bytes32(0),
+            client,
+            client,
+            abi.encode(IConceroRouter.EvmArgs({dstChainGasLimit: dstChainGasLimit})),
+            messageData
+        );
+
+        bytes32 messageId = s_conceroRouter.sendMessage(messageReq);
         vm.stopPrank();
+        vm.pauseGasMetering();
+
+        uint256 clientBalanceAfter = IERC20(s_usdcBase).balanceOf(client);
+        assertEq(clientBalanceBefore - feeInUsdc, clientBalanceAfter);
     }
 }

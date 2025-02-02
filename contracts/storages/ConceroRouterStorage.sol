@@ -20,8 +20,8 @@ abstract contract ConceroRouterStorage is IConceroRouterStorage {
     mapping(bytes32 messageId => bytes32 messageHash) internal s_messageHashById;
 
     // @dev clf mappings
-    mapping(bytes32 clfReqId => ClfRequest clfRequest) internal s_clfRequests;
-    mapping(bytes32 clfReqId => bool isPending) internal s_isClfReqPending;
+    mapping(bytes32 clfReqId => ClfReqType reqType) internal s_clfReqTypeById;
+    mapping(bytes32 clfReqId => bytes32 conceroMessageId) internal s_conceroMessageIdByClfReqId;
 
     // @dev price feed mappings
     mapping(uint64 chainSelector => uint256 gasPrice) internal s_lastGasPrices;

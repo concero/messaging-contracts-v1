@@ -8,9 +8,4 @@ interface IConceroRouterStorage {
         SendUnconfirmedMessage,
         ConfirmMessage
     }
-
-    struct ClfRequest {
-        ClfReqType reqType;
-        bytes32 conceroMessageId;
-    }
 }
