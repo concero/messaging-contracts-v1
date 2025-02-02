@@ -12,6 +12,7 @@ interface IConceroRouter {
     error UnexpectedCLFRequestId();
     error UnknownClfReqType();
     error NotMessenger();
+    error NotAdmin();
     error TxAlreadyExists();
     error MessageDoesntExist();
     error MessageAlreadyConfirmed();

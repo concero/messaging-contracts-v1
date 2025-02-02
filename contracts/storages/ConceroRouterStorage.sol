@@ -10,9 +10,12 @@ abstract contract ConceroRouterStorage is IConceroRouterStorage {
     uint256 internal s_latestNativeUsdcRate;
     uint256 internal s_latestLinkNativeRate;
 
+    // @dev src chain mappings
     mapping(uint64 dstChainSelector => uint256 nonce) internal s_nonceByChain;
     mapping(uint64 dstChainSelector => address conceroRouter) internal s_dstConceroRouterByChain;
     mapping(uint64 => uint256) internal s_clfFeesInUsdc;
+
+    // @dev dst chain mappings
     mapping(bytes32 messageId => bool isConfirmed) internal s_isMessageConfirmed;
     mapping(bytes32 messageId => bytes32 messageHash) internal s_messageHashById;
 

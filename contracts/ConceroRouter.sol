@@ -33,6 +33,7 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
     address internal immutable i_msgr0;
     address internal immutable i_msgr1;
     address internal immutable i_msgr2;
+    address internal immutable i_admin;
     // @dev clf immutables
     uint8 internal immutable i_clfDonHostedSecretsSlotId;
     uint64 internal immutable i_clfDonHostedSecretsVersion;
@@ -69,6 +70,7 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
         i_clfSrcJsHash = clfSrcJsHash;
         i_clfDstJsHash = clfDstJsHash;
         i_clfEthersJsHash = clfEthersJsHash;
+        i_admin = msg.sender;
     }
 
     /* MODIFIERS */
@@ -76,6 +78,13 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
     modifier onlyMessenger() {
         if (msg.sender != i_msgr0 && msg.sender != i_msgr1 && msg.sender != i_msgr2) {
             revert NotMessenger();
+        }
+        _;
+    }
+
+    modifier onlyAdmin() {
+        if (msg.sender != i_admin) {
+            revert NotAdmin();
         }
         _;
     }
@@ -163,7 +172,18 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
         emit UnconfirmedMessageReceived(messageId);
     }
 
-    /* PUBLIC FUNCTIONS */
+    /* ADMIN FUNCTIONS */
+
+    function setDstConceroRouterByChain(
+        uint64 dstChainSelector,
+        address conceroRouter
+    ) external payable onlyAdmin {
+        s_dstConceroRouterByChain[dstChainSelector] = conceroRouter;
+    }
+
+    function setClfFeeInUsdc(uint64 chainSelector, uint256 feeInUsdc) external payable onlyAdmin {
+        s_clfFeesInUsdc[chainSelector] = feeInUsdc;
+    }
 
     /* INTERNAL FUNCTIONS */
 

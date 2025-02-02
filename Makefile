@@ -20,7 +20,7 @@ include ./.env.deployments.testnet
 include ./.env.wallets
 include .env.foundry
 
-ENV_FILES := ./.env ./.env.tokens ./.env.clccip ./.env.clf ./.env.deployments.mainnet ./.env.deployments.testnet ./.env.wallets .env.foundry 
+ENV_FILES := ./.env ./.env.tokens ./.env.clccip ./.env.clf ./.env.deployments.mainnet ./.env.deployments.testnet ./.env.wallets .env.foundry
 export $(shell cat $(ENV_FILES) | sed 's/=.*//' | sort | uniq)
 args =
 
@@ -29,20 +29,11 @@ all: test
 install:
 	grep -E '^\s*url' ./.gitmodules | awk '{print $$3}' | xargs -I {} sh -c 'forge install {}'
 
-run_fork:
-	anvil --fork-url ${BASE_RPC_URL} -p ${BASE_LOCAL_FORK_PORT} $(args)
-
-run_arb_fork:
-	anvil --fork-url ${ARB_RPC_URL} -p ${ARB_LOCAL_FORK_PORT} $(args)
-
-run_polygon_fork:
-	anvil --fork-url ${POLYGON_RPC_URL} -p ${POLYGON_LOCAL_FORK_PORT} $(args)
-
-run_avalanche_fork:
-	anvil --fork-url ${AVALANCHE_RPC_URL} -p ${AVALANCHE_LOCAL_FORK_PORT} $(args)
-
 test:
 	forge test $(args)
+
+gas_snapshot:
+	forge snapshot
 
 .PHONY: all test
 

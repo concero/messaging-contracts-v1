@@ -21,22 +21,32 @@ contract ConceroRouterTest is Test {
     DeployConceroRouterHarnessScript internal s_deployConceroRouterScript =
         new DeployConceroRouterHarnessScript();
     ConceroRouterHarness internal s_conceroRouter;
-    uint256 internal s_baseForkId = vm.createFork(vm.envString("RPC_URL_BASE"));
+    uint256 internal s_baseForkId = vm.createSelectFork(vm.envString("RPC_URL_BASE"));
     uint64 internal s_arbChainSelector = uint64(vm.envUint("CL_CCIP_CHAIN_SELECTOR_ARBITRUM"));
     uint64 internal s_baseChainSelector = uint64(vm.envUint("CL_CCIP_CHAIN_SELECTOR_BASE"));
     address internal s_usdcBase = vm.envAddress("USDC_BASE");
 
     function setUp() public {
-        s_conceroRouter = ConceroRouterHarness(s_deployConceroRouterScript.run(s_baseForkId));
+        deal(
+            s_deployConceroRouterScript.getLinkAddress(),
+            s_deployConceroRouterScript.getDeployer(),
+            10_000 * 1e18
+        );
+
+        s_conceroRouter = ConceroRouterHarness(s_deployConceroRouterScript.run());
         s_conceroRouter.exposed_setLastGasPrice(s_arbChainSelector, ARB_GAS_PRICE);
         s_conceroRouter.exposed_setLatestLinkNativeRate(LINK_NATIVE_RATE);
         s_conceroRouter.exposed_setLatestLinkUsdcRate(LINK_USDC_RATE);
         s_conceroRouter.exposed_setLatestNativeUsdcRate(NATIVE_USDC_RATE);
         s_conceroRouter.exposed_setClfFeesInUsdc(s_arbChainSelector, ARB_CLF_FEE_IN_USDC);
         s_conceroRouter.exposed_setClfFeesInUsdc(s_baseChainSelector, BASE_CLF_FEE_IN_USDC);
+
+        vm.prank(s_deployConceroRouterScript.getDeployer());
+        // @dev doesnt matter what the value is
+        s_conceroRouter.setDstConceroRouterByChain(s_arbChainSelector, makeAddr("arb router"));
     }
 
-    function test_getFee() public {
+    function test_sendMessage() public {
         vm.pauseGasMetering();
         address client = makeAddr("client");
         deal(s_usdcBase, client, 1_000_000 * USDC_DECIMALS);
