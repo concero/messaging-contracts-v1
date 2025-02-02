@@ -17,10 +17,11 @@ abstract contract ConceroRouterStorage is IConceroRouterStorage {
 
     // @dev dst chain mappings
     mapping(bytes32 messageId => bool isConfirmed) internal s_isMessageConfirmed;
-    mapping(bytes32 messageId => bytes32 messageHash) internal s_messageHashById;
+    mapping(bytes32 conceroMessageId => bytes32 messageHash)
+        internal s_messageHashByConceroMessageId;
 
     // @dev clf mappings
-    mapping(bytes32 clfReqId => ClfReqType reqType) internal s_clfReqTypeById;
+    mapping(bytes32 clfReqId => ClfReqType reqType) internal s_clfReqTypeByClfReqId;
     mapping(bytes32 clfReqId => bytes32 conceroMessageId) internal s_conceroMessageIdByClfReqId;
 
     // @dev price feed mappings

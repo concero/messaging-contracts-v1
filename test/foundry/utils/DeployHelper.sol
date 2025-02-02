@@ -187,7 +187,7 @@ contract DeployHelper is Script {
         return bytes32(0);
     }
 
-    function getClfEthersJsHash() public view returns (bytes32) {
+    function getClfEthersJsHash() public pure returns (bytes32) {
         // @dev doesn't matter for forge tests
         return bytes32(0);
     }

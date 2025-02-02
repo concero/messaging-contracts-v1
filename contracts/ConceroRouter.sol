@@ -141,10 +141,10 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
         uint64 srcChainSelector,
         bytes32 messageHash
     ) external onlyMessenger {
-        if (s_messageHashById[messageId] != bytes32(0)) {
-            revert TxAlreadyExists();
+        if (s_messageHashByConceroMessageId[messageId] == bytes32(0)) {
+            s_messageHashByConceroMessageId[messageId] = messageHash;
         } else {
-            s_messageHashById[messageId] = messageHash;
+            revert MessageAlreadyExists();
         }
 
         address srcConceroRouter = s_dstConceroRouterByChain[srcChainSelector];
@@ -164,7 +164,7 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
 
         bytes32 clfReqId = _initializeAndSendClfRequest(clfReqArgs, CLF_DST_CALLBACK_GAS_LIMIT);
 
-        s_clfReqTypeById[clfReqId] = ClfReqType.ConfirmMessage;
+        s_clfReqTypeByClfReqId[clfReqId] = ClfReqType.ConfirmMessage;
         s_conceroMessageIdByClfReqId[clfReqId] = messageId;
 
         emit UnconfirmedMessageReceived(messageId);
@@ -176,10 +176,18 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
         uint64 dstChainSelector,
         address conceroRouter
     ) external payable onlyAdmin {
+        require(conceroRouter != address(0), InvalidConceroRouter());
+        require(
+            dstChainSelector != i_chainSelector && dstChainSelector != 0,
+            InvalidChainSelector()
+        );
+
         s_dstConceroRouterByChain[dstChainSelector] = conceroRouter;
     }
 
     function setClfFeeInUsdc(uint64 chainSelector, uint256 feeInUsdc) external payable onlyAdmin {
+        require(chainSelector != 0, InvalidChainSelector());
+
         s_clfFeesInUsdc[chainSelector] = feeInUsdc;
     }
 
@@ -239,7 +247,7 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
 
         bytes32 clfReqId = _initializeAndSendClfRequest(clfReqArgs, CLF_SRC_CALLBACK_GAS_LIMIT);
 
-        s_clfReqTypeById[clfReqId] = ClfReqType.SendUnconfirmedMessage;
+        s_clfReqTypeByClfReqId[clfReqId] = ClfReqType.SendUnconfirmedMessage;
     }
 
     function _initializeAndSendClfRequest(
@@ -259,10 +267,10 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
         bytes memory response,
         bytes memory err
     ) internal override {
-        ClfReqType clfReqType = s_clfReqTypeById[clfReqId];
+        ClfReqType clfReqType = s_clfReqTypeByClfReqId[clfReqId];
 
         if (clfReqType != ClfReqType.Empty) {
-            s_clfReqTypeById[clfReqId] = ClfReqType.Empty;
+            s_clfReqTypeByClfReqId[clfReqId] = ClfReqType.Empty;
         } else {
             revert UnexpectedCLFRequestId();
         }
@@ -288,7 +296,7 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
         bytes32 conceroMessageId,
         bytes memory response
     ) internal {
-        bytes32 conceroMessageHash = s_messageHashById[conceroMessageId];
+        bytes32 conceroMessageHash = s_messageHashByConceroMessageId[conceroMessageId];
         if (conceroMessageHash == bytes32(0)) {
             revert MessageDoesntExist();
         }

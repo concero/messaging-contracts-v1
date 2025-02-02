@@ -9,11 +9,12 @@ interface IConceroRouter {
     error MessageTooLarge();
     error InvalidDstChainGasLimit();
     error InvalidChainSelector();
+    error InvalidConceroRouter();
     error UnexpectedCLFRequestId();
     error UnknownClfReqType();
     error NotMessenger();
     error NotAdmin();
-    error TxAlreadyExists();
+    error MessageAlreadyExists();
     error MessageDoesntExist();
     error MessageAlreadyConfirmed();
     error MessageDataHashMismatch();
