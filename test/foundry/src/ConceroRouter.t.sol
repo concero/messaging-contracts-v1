@@ -185,6 +185,13 @@ contract ConceroRouterTest is Test {
             uint8(s_conceroRouter.exposed_getClfReqTypeByClfReqId(clfReqId)),
             uint8(IConceroRouterStorage.ClfReqType.Empty)
         );
+
+        assertEq(
+            s_conceroRouter.exposed_getMessageHashByConceroMessageId(conceroMessageId),
+            conceroMessageHash
+        );
+
+        assertEq(s_conceroRouter.exposed_isMessageConfirmed(conceroMessageId), true);
     }
 
     /* REVERT TESTS */
@@ -344,6 +351,55 @@ contract ConceroRouterTest is Test {
 
         vm.startPrank(s_conceroRouter.exposed_getClfRouter());
         vm.expectRevert(IConceroRouter.UnexpectedCLFRequestId.selector);
+        FunctionsClient(address(s_conceroRouter)).handleOracleFulfillment(clfReqId, response, err);
+    }
+
+    function test_handleOracleFulfillmentMessageAlreadyConfirmed_revert() public {
+        bytes32 clfReqId = keccak256("clf req id");
+        bytes32 conceroMessageId = keccak256("concero message id");
+        address receiver = address(new ConceroClientMock(address(s_conceroRouter)));
+        address sender = makeAddr("sender");
+        uint64 srcChainSelector = s_arbChainSelector;
+        uint24 gasLimit = 1000000;
+        bytes memory messageData = new bytes(0);
+        bytes memory err = new bytes(0);
+        bytes memory response = abi.encodePacked(
+            receiver,
+            sender,
+            srcChainSelector,
+            gasLimit,
+            messageData
+        );
+        bytes32 conceroMessageHash = keccak256(
+            abi.encode(
+                conceroMessageId,
+                srcChainSelector,
+                s_conceroRouter.exposed_getChainSelector(),
+                sender,
+                receiver,
+                keccak256(messageData)
+            )
+        );
+
+        s_conceroRouter.exposed_setClfReqTypeByClfReqId(
+            clfReqId,
+            IConceroRouterStorage.ClfReqType.ConfirmMessage
+        );
+        s_conceroRouter.exposed_setConceroMessageIdByClfReqId(clfReqId, conceroMessageId);
+        s_conceroRouter.exposed_setMessageHashByConceroMessageId(
+            conceroMessageId,
+            conceroMessageHash
+        );
+
+        vm.startPrank(s_conceroRouter.exposed_getClfRouter());
+        FunctionsClient(address(s_conceroRouter)).handleOracleFulfillment(clfReqId, response, err);
+
+        s_conceroRouter.exposed_setClfReqTypeByClfReqId(
+            clfReqId,
+            IConceroRouterStorage.ClfReqType.ConfirmMessage
+        );
+
+        vm.expectRevert(IConceroRouter.MessageAlreadyConfirmed.selector);
         FunctionsClient(address(s_conceroRouter)).handleOracleFulfillment(clfReqId, response, err);
     }
 }

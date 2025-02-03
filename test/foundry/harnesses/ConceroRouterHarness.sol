@@ -118,4 +118,8 @@ contract ConceroRouterHarness is ConceroRouter {
     function exposed_getChainSelector() external view returns (uint64) {
         return i_chainSelector;
     }
+
+    function exposed_isMessageConfirmed(bytes32 conceroMessageId) external view returns (bool) {
+        return s_isMessageConfirmed[conceroMessageId];
+    }
 }
