@@ -4,9 +4,9 @@ pragma solidity 0.8.28;
 
 import {IConceroClient} from "./interfaces/IConceroClient.sol";
 
-error InvalidConceroRouter(address router);
-
 abstract contract ConceroClient is IConceroClient {
+    error InvalidConceroRouter(address router);
+
     address private immutable i_conceroRouter;
 
     constructor(address router) {
