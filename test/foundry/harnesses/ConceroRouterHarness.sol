@@ -64,6 +64,13 @@ contract ConceroRouterHarness is ConceroRouter {
         s_conceroMessageIdByClfReqId[reqId] = conceroMessageId;
     }
 
+    function exposed_setMessageHashByConceroMessageId(
+        bytes32 conceroMessageId,
+        bytes32 messageHash
+    ) external {
+        s_messageHashByConceroMessageId[conceroMessageId] = messageHash;
+    }
+
     /* GETTERS */
 
     function exposed_getMaxMessageDataSize() external pure returns (uint256) {
@@ -106,5 +113,9 @@ contract ConceroRouterHarness is ConceroRouter {
 
     function exposed_getClfRouter() external view returns (address) {
         return address(i_router);
+    }
+
+    function exposed_getChainSelector() external view returns (uint64) {
+        return i_chainSelector;
     }
 }

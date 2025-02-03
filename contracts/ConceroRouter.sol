@@ -108,6 +108,7 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
             )
         );
 
+        // @dev TODO: should we include dstChainGasLimit (extra args) to this hash?
         bytes32 messageHash = keccak256(
             abi.encode(
                 messageId,
@@ -292,15 +293,15 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
         bytes32 conceroMessageId,
         bytes memory response
     ) internal {
-        bytes32 conceroMessageHash = s_messageHashByConceroMessageId[conceroMessageId];
-        if (conceroMessageHash == bytes32(0)) {
-            revert MessageDoesntExist();
-        }
-
         if (!s_isMessageConfirmed[conceroMessageId]) {
             s_isMessageConfirmed[conceroMessageId] = true;
         } else {
             revert MessageAlreadyConfirmed();
+        }
+
+        bytes32 conceroMessageHash = s_messageHashByConceroMessageId[conceroMessageId];
+        if (conceroMessageHash == bytes32(0)) {
+            revert MessageDoesntExist();
         }
 
         (
@@ -389,12 +390,12 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
             gasLimit := mload(add(response, 51))
         }
 
-        if (response.length > 32) {
-            uint256 messageDataLength = response.length - 32;
+        if (response.length > 51) {
+            uint256 messageDataLength = response.length - 51;
             messageData = new bytes(messageDataLength);
 
             for (uint256 i; i < messageDataLength; i++) {
-                messageData[i] = response[32 + i];
+                messageData[i] = response[51 + i];
             }
         }
     }
