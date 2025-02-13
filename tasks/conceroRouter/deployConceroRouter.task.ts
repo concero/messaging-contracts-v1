@@ -69,8 +69,8 @@ async function deployConceroRouter(params: DeployInfraParams) {
 task("deploy-concero-router", "Deploy the concero router")
     .addFlag("proxy", "Deploy the proxy")
     .addFlag("implementation", "Deploy the implementation")
-    .addFlag("setvars", "Set the contract variables")
-    .addFlag("uploadsecrets", "Upload DON-hosted secrets")
+    .addFlag("vars", "Set the contract variables")
+    .addFlag("secrets", "Upload DON-hosted secrets")
     .setAction(async taskArgs => {
         compileContracts({ quiet: true })
 
@@ -96,8 +96,8 @@ task("deploy-concero-router", "Deploy the concero router")
             networkType,
             deployProxy: taskArgs.proxy,
             deployImplementation: taskArgs.implementation,
-            setVars: taskArgs.setvars,
-            uploadSecrets: taskArgs.uploadsecrets,
+            setVars: taskArgs.vars,
+            uploadSecrets: taskArgs.secrets,
             slotId: CONCERO_ROUTER_CLF_SECRETS_SLOT_ID,
         })
     })

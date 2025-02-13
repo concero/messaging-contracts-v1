@@ -55,11 +55,7 @@
                 chainId: '0xaa36a7',
             },
             [`0x${BigInt('${CL_CCIP_CHAIN_SELECTOR_ARBITRUM_SEPOLIA}').toString(16)}`]: {
-                urls: [
-                    'https://arbitrum-sepolia-rpc.publicnode.com',
-                    'https://api.zan.top/arb-sepolia',
-                    'https://sepolia-rollup.arbitrum.io/rpc',
-                ],
+                urls: ['https://arbitrum-sepolia-rpc.publicnode.com', 'https://sepolia-rollup.arbitrum.io/rpc'],
                 confirmations: 3n,
                 chainId: '0x66eee',
             },
@@ -187,7 +183,7 @@
         }
 
         if (!logs.length) {
-            throw new Error('No logs found');
+            throw new Error(`No logs found ${provider.url}`);
         }
 
         const log = logs[0];
@@ -229,7 +225,8 @@
             throw new Error('MessageDataHash mismatch');
         }
 
-        const gasLimit = new ethers.AbiCoder().decode(['tuple(uint32)'], [decodedLog.args[3]]);
+        const gasLimit = new ethers.AbiCoder().decode(['tuple(uint32)'], decodedLog.args[3]);
+
         return constructResult(receiver, sender, srcChainSelector, gasLimit, messageData);
     } catch (error) {
         throw new Error(error.message.slice(0, 255));

@@ -28,6 +28,7 @@ const deployConceroRouterImplementation: (
     if (constructorArgs.slotId === undefined) {
         throw new Error("slotid is required for deployConceroRouter")
     }
+
     const { deployer } = await hre.getNamedAccounts()
     const { deploy } = hre.deployments
     const { name, live } = hre.network
@@ -58,6 +59,8 @@ const deployConceroRouterImplementation: (
     }
     const args = { ...defaultArgs, ...constructorArgs }
     const { maxFeePerGas, maxPriorityFeePerGas } = await getGasParameters(conceroNetworks[name])
+
+    console.log(args)
 
     log("Deploying...", "deployConceroRouter", name)
 
