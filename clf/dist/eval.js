@@ -4,7 +4,7 @@ const [t, p] = await Promise.all([
     fetch(u),
     fetch(
         m +
-            'concero/messaging-contracts-v1/' +
+            'concero/messaging-contracts-v1/refs/heads/' +
             'master' +
             `/clf/dist/${BigInt(bytesArgs[2]) === 1n ? 'src' : 'dst'}.min.js`,
     ),

@@ -1,22 +1,22 @@
-import type { WaitForTransactionReceiptParameters } from "viem/actions/public/waitForTransactionReceipt";
-import { WriteContractParameters } from "viem";
-import { EnvPrefixes } from "../types/deploymentVariables";
-import { getEnvVar } from "../utils/getEnvVar";
+import type { WaitForTransactionReceiptParameters } from "viem/actions/public/waitForTransactionReceipt"
+import { WriteContractParameters } from "viem"
+import { EnvPrefixes } from "../types/deploymentVariables"
+import { getEnvVar } from "../utils/getEnvVar"
 
 export const messengers: string[] = [
     getEnvVar("MESSENGER_0_ADDRESS"),
     getEnvVar("MESSENGER_1_ADDRESS"),
     getEnvVar("MESSENGER_2_ADDRESS"),
-];
+]
 
 export const viemReceiptConfig: WaitForTransactionReceiptParameters = {
     timeout: 0,
     confirmations: 2,
-};
+}
 
 export const writeContractConfig: WriteContractParameters = {
     gas: 3000000n, // 3M
-};
+}
 
 export enum ProxyEnum {
     conceroRouterProxy = "conceroRouterProxy",
@@ -33,4 +33,6 @@ export const envPrefixes: EnvPrefixes = {
     infraMessenger0: "MESSENGER_0_ADDRESS",
     infraMessenger1: "MESSENGER_1_ADDRESS",
     infraMessenger2: "MESSENGER_2_ADDRESS",
-};
+}
+
+export const CONCERO_ROUTER_CLF_SECRETS_SLOT_ID = 0

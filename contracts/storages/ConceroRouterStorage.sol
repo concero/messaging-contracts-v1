@@ -32,4 +32,8 @@ abstract contract ConceroRouterStorage is IConceroRouterStorage {
     function getMessageHashById(bytes32 conceroMessageId) external view returns (bytes32) {
         return s_messageHashByConceroMessageId[conceroMessageId];
     }
+
+    function getDstConceroRouterByChain(uint64 dstChainSelector) external view returns (address) {
+        return s_dstConceroRouterByChain[dstChainSelector];
+    }
 }
