@@ -1,5 +1,11 @@
 (async () => {
-    const [, , , dstContractAddress, conceroMessageId, srcChainSelector, dstChainSelector, txDataHash] = bytesArgs;
+    const [_, __, ___, dstContractAddress, conceroMessageId, srcChainSelector, dstChainSelector, txDataHash] =
+        bytesArgs;
+    const messengerPrivetKeys = [
+        secrets.MESSENGER_0_PRIVATE_KEY,
+        secrets.MESSENGER_1_PRIVATE_KEY,
+        secrets.MESSENGER_2_PRIVATE_KEY,
+    ];
     const chainSelectors = {
         [`0x${BigInt('${CL_CCIP_CHAIN_SELECTOR_FUJI}').toString(16)}`]: {
             urls: [`https://avalanche-fuji.infura.io/v3/${secrets.INFURA_API_KEY}`],
@@ -140,6 +146,19 @@
                 maticUsd: '${MATIC_USD_PRICEFEED_AVALANCHE}',
             },
         },
+        [`0x${BigInt('${CL_CCIP_CHAIN_SELECTOR_OPTIMISM}').toString(16)}`]: {
+            urls: ['https://optimism-rpc.publicnode.com', 'https://rpc.ankr.com/optimism'],
+            chainId: '0xa',
+            nativeCurrency: 'eth',
+            priceFeed: {
+                linkUsd: '${LINK_USD_PRICEFEED_OPTIMISM}',
+                usdcUsd: '${USDC_USD_PRICEFEED_OPTIMISM}',
+                nativeUsd: '${NATIVE_USD_PRICEFEED_OPTIMISM}',
+                linkNative: '${LINK_NATIVE_PRICEFEED_OPTIMISM}',
+                ethUsd: '${ETH_USD_PRICEFEED_OPTIMISM}',
+                maticUsd: '${MATIC_USD_PRICEFEED_OPTIMISM}',
+            },
+        },
     };
     const UINT256_BYTES_LENGTH = 32;
     const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -244,7 +263,7 @@
             if (dstAssetUsdPriceFeed === undefined) return 1n;
 
             const srcNativeDstNativeRate = nativeUsdPriceFeed / dstAssetUsdPriceFeed;
-            if (srcNativeDstNativeRate === 0n) return 1n;
+            if (BigInt(srcNativeDstNativeRate) === 0n) return 1n;
 
             const dstGasPriceInSrcCurrency = gasPriceInDstCurrency / srcNativeDstNativeRate;
 
@@ -268,11 +287,12 @@
     let nonce = 0;
     let retries = 0;
     let gasPrice;
-    // let maxPriorityFeePerGas;
+    let maxPriorityFeePerGas;
+    let maxFeePerGas;
 
     const sendTransaction = async (contract, signer, txOptions) => {
         try {
-            if ((await contract.getMessageHashById(conceroMessageId))[0] !== ethers.ZeroHash) return;
+            if ((await contract.getMessageHashById(conceroMessageId)) !== ethers.ZeroHash) return;
 
             await contract.receiveUnconfirmedMessage(conceroMessageId, srcChainSelector, txDataHash, txOptions);
         } catch (err) {
@@ -326,25 +346,28 @@
                 Math.floor(Math.random() * chainSelectors[dstChainSelector].urls.length)
             ];
         const provider = new FunctionsJsonRpcProvider(dstUrl);
-        const wallet = new ethers.Wallet('0x' + secrets.MESSENGER_0_PRIVATE_KEY, provider);
+        const messengerPrivateKey = messengerPrivetKeys[BigInt(conceroMessageId) % 3n];
+        const wallet = new ethers.Wallet('0x' + messengerPrivateKey, provider);
         const signer = wallet.connect(provider);
         const abi = [
             'function receiveUnconfirmedMessage(bytes32, uint64, bytes32) external',
-            'function getMessageHashById(bytes32) view returns (bytes32, address, address, uint256, uint8, uint64, bool, bytes)',
+            'function getMessageHashById(bytes32) view returns (bytes32)',
         ];
         const contract = new ethers.Contract(dstContractAddress, abi, signer);
         const [feeData, nonce] = await Promise.all([
             provider.getFeeData(),
             provider.getTransactionCount(wallet.address),
         ]);
-        gasPrice = feeData.gasPrice;
-        const maxPriorityFeePerGas = feeData.maxPriorityFeePerGas;
-        const maxFeePerGas =
-            dstChainSelector === `0x${BigInt('${CL_CCIP_CHAIN_SELECTOR_POLYGON}').toString(16)}`
-                ? Math.max(gasPrice, maxPriorityFeePerGas)
-                : Math.max(gasPrice + getPercent(gasPrice, 10), maxPriorityFeePerGas);
 
-        await sendTransaction(contract, signer, { nonce, maxPriorityFeePerGas, maxFeePerGas });
+        gasPrice = feeData.gasPrice + getPercent(feeData.gasPrice, 10);
+        maxPriorityFeePerGas = feeData.maxPriorityFeePerGas;
+        maxFeePerGas = feeData.maxFeePerGas;
+
+        await sendTransaction(contract, signer, {
+            nonce,
+            maxPriorityFeePerGas: maxPriorityFeePerGas + getPercent(maxPriorityFeePerGas, 10),
+            maxFeePerGas: maxFeePerGas + getPercent(maxFeePerGas, 10),
+        });
 
         const srcUrl =
             chainSelectors[srcChainSelector].urls[

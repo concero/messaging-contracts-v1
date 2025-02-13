@@ -4,6 +4,7 @@ import { conceroNetworks, networkEnvKeys } from "../constants/conceroNetworks"
 import updateEnvVariable from "../utils/updateEnvVariable"
 import log from "../utils/log"
 import { getGasParameters } from "../utils/getGasPrice"
+import { getEnvVar } from "../utils"
 
 interface ConstructorArgs {
     conceroProxyAddress?: string
@@ -23,12 +24,15 @@ const deployConceroTestClient: (hre: HardhatRuntimeEnvironment, constructorArgs?
         const { deploy } = hre.deployments
         const { name, live } = hre.network
         const { maxFeePerGas, maxPriorityFeePerGas } = await getGasParameters(conceroNetworks[name])
+        const type = conceroNetworks[name].type
 
         log("Deploying...", "deployConceroTestClient", name)
 
+        const conceroRouter = getEnvVar(`CONCERO_ROUTER_PROXY_${networkEnvKeys[name]}`)
+
         const deployConceroTestClient = (await deploy("ConceroTestClient", {
             from: deployer,
-            args: [],
+            args: [conceroRouter],
             log: true,
             autoMine: true,
             maxFeePerGas: maxFeePerGas.toString(),

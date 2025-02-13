@@ -1,17 +1,17 @@
-type envString = string | undefined;
+type envString = string | undefined
 
 export type CLFSecrets = {
-    MESSENGER_0_PRIVATE_KEY: envString;
-    MESSENGER_1_PRIVATE_KEY: envString;
-    MESSENGER_2_PRIVATE_KEY: envString;
-    POOL_MESSENGER_0_PRIVATE_KEY: envString;
-    INFURA_API_KEY: envString;
-    ALCHEMY_API_KEY: envString;
-    PARENT_POOL_INFURA_API_KEY: envString;
-    PARENT_POOL_ALCHEMY_API_KEY: envString;
-};
+    MESSENGER_0_PRIVATE_KEY: envString
+    MESSENGER_1_PRIVATE_KEY: envString
+    MESSENGER_2_PRIVATE_KEY: envString
+    POOL_MESSENGER_0_PRIVATE_KEY: envString
+    INFURA_API_KEY: envString
+    ALCHEMY_API_KEY: envString
+    PARENT_POOL_INFURA_API_KEY: envString
+    PARENT_POOL_ALCHEMY_API_KEY: envString
+}
 
-export const secrets: CLFSecrets = {
+export const clfSecrets: CLFSecrets = {
     MESSENGER_0_PRIVATE_KEY: process.env.MESSENGER_0_PRIVATE_KEY,
     MESSENGER_1_PRIVATE_KEY: process.env.MESSENGER_1_PRIVATE_KEY,
     MESSENGER_2_PRIVATE_KEY: process.env.MESSENGER_2_PRIVATE_KEY,
@@ -20,7 +20,7 @@ export const secrets: CLFSecrets = {
     ALCHEMY_API_KEY: process.env.ALCHEMY_API_KEY,
     PARENT_POOL_INFURA_API_KEY: process.env.PARENT_POOL_INFURA_API_KEY,
     PARENT_POOL_ALCHEMY_API_KEY: process.env.PARENT_POOL_ALCHEMY_API_KEY,
-};
+}
 
-export const CLF_SECRETS_TESTNET_EXPIRATION = 4320;
-export const CLF_SECRETS_MAINNET_EXPIRATION = 129600;
+export const CLF_SECRETS_TESTNET_EXPIRATION = 4320
+export const CLF_SECRETS_MAINNET_EXPIRATION = 129600
