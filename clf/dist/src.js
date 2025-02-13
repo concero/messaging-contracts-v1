@@ -8,7 +8,7 @@
     ];
     const chainSelectors = {
         [`0x${BigInt('14767482510784806043').toString(16)}`]: {
-            urls: [`https://avalanche-fuji.infura.io/v3/${secrets.INFURA_API_KEY}`],
+            urls: ['https://avalanche-fuji-c-chain-rpc.publicnode.com', 'https://rpc.ankr.com/avalanche_fuji'],
             chainId: '0xa869',
             nativeCurrency: 'avax',
             priceFeed: {
@@ -21,10 +21,7 @@
             },
         },
         [`0x${BigInt('16015286601757825753').toString(16)}`]: {
-            urls: [
-                `https://sepolia.infura.io/v3/${secrets.INFURA_API_KEY}`,
-                'https://ethereum-sepolia-rpc.publicnode.com',
-            ],
+            urls: ['https://ethereum-sepolia-rpc.publicnode.com'],
             chainId: '0xaa36a7',
             nativeCurrency: 'eth',
             priceFeed: {
@@ -36,8 +33,9 @@
         },
         [`0x${BigInt('3478487238524512106').toString(16)}`]: {
             urls: [
-                `https://arbitrum-sepolia.infura.io/v3/${secrets.INFURA_API_KEY}`,
                 'https://arbitrum-sepolia-rpc.publicnode.com',
+                'https://api.zan.top/arb-sepolia',
+                'https://sepolia-rollup.arbitrum.io/rpc',
             ],
             chainId: '0x66eee',
             nativeCurrency: 'eth',
@@ -50,8 +48,9 @@
         },
         [`0x${BigInt('10344971235874465080').toString(16)}`]: {
             urls: [
-                `https://base-sepolia.g.alchemy.com/v2/${secrets.ALCHEMY_API_KEY}`,
                 'https://base-sepolia-rpc.publicnode.com',
+                'https://sepolia.base.org',
+                'https://base-sepolia.gateway.tenderly.co',
             ],
             chainId: '0x14a34',
             nativeCurrency: 'eth',
