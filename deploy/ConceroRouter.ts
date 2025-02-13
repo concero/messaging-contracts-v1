@@ -60,8 +60,6 @@ const deployConceroRouterImplementation: (
     const args = { ...defaultArgs, ...constructorArgs }
     const { maxFeePerGas, maxPriorityFeePerGas } = await getGasParameters(conceroNetworks[name])
 
-    console.log(args)
-
     log("Deploying...", "deployConceroRouter", name)
 
     const deployChildPool = (await deploy("ConceroRouter", {
