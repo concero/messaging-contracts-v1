@@ -308,7 +308,7 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
             address receiver,
             address sender,
             uint64 srcChainSelector,
-            uint64 gasLimit,
+            uint24 gasLimit,
             bytes memory messageData
         ) = _decodeConfirmMessageClfResp(response);
 
@@ -379,7 +379,7 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
             address receiver,
             address sender,
             uint64 srcChainSelector,
-            uint64 gasLimit,
+            uint24 gasLimit,
             bytes memory messageData
         )
     {
@@ -387,15 +387,15 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
             receiver := mload(add(response, 20))
             sender := mload(add(response, 40))
             srcChainSelector := mload(add(response, 48))
-            gasLimit := mload(add(response, 56))
+            gasLimit := mload(add(response, 51))
         }
 
-        if (response.length > 52) {
-            uint256 messageDataLength = response.length - 52;
+        if (response.length > 51) {
+            uint256 messageDataLength = response.length - 51;
             messageData = new bytes(messageDataLength);
 
             for (uint256 i; i < messageDataLength; ++i) {
-                messageData[i] = response[52 + i];
+                messageData[i] = response[51 + i];
             }
         }
     }

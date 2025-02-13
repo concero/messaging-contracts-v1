@@ -14,7 +14,7 @@
             const encodedReceiver = encodeParam(receiver, 20);
             const encodedSender = encodeParam(sender, 20);
             const encodedSrcChainSelector = encodeParam(srcChainSelector, 8);
-            const encodedGasLimit = encodeParam(gasLimit, 8);
+            const encodedGasLimit = encodeParam(gasLimit, 3);
             const encodedMessageData = ethers.getBytes(messageData);
             const totalLength =
                 encodedReceiver.length +
@@ -155,7 +155,7 @@
                 logs = await provider.getLogs({
                     address: srcContractAddress,
                     topics: [topic0, conceroMessageId],
-                    fromBlock: BigInt(Math.max(Number(latestBlockNumber - 1000n), 0)),
+                    fromBlock: BigInt(Math.max(Number(latestBlockNumber - 10000n), 0)),
                     toBlock: latestBlockNumber,
                 });
             } catch (e) {}
@@ -199,8 +199,8 @@
         if (recomputedTxDataHash.toLowerCase() !== txDataHash.toLowerCase()) {
             throw new Error('MessageDataHash mismatch');
         }
-        const gasLimit = new ethers.AbiCoder().decode(['tuple(uint32)'], decodedLog.args[3]);
-        return constructResult(receiver, sender, srcChainSelector, '0x' + gasLimit[0][0].toString(16), messageData);
+        const gasLimit = new ethers.AbiCoder().decode(['tuple(uint32)'], decodedLog.args[3])[0][0];
+        return constructResult(receiver, sender, srcChainSelector, '0x' + gasLimit.toString(16) + '0', messageData);
     } catch (error) {
         throw new Error(error.message.slice(0, 255));
     }
