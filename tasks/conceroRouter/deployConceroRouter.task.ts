@@ -16,6 +16,7 @@ import { conceroChains } from "../../constants/liveChains"
 import { uploadClfSecrets } from "../clf/uploadSecrets.task"
 import { compileContracts } from "../../utils/compileContracts"
 import { setConceroRouterVars } from "./setConceroRouterVars"
+import { handleError } from "../../utils/handleError"
 
 interface DeployInfraParams {
     hre: any
@@ -30,34 +31,38 @@ interface DeployInfraParams {
 }
 
 async function deployConceroRouter(params: DeployInfraParams) {
-    const { hre, deployableChains, deployProxy, deployImplementation, setVars, uploadSecrets, slotId } = params
-    const name = hre.network.name as CNetworkNames
-    const isTestnet = deployableChains[0].type === "testnet"
+    try {
+        const { hre, deployableChains, deployProxy, deployImplementation, setVars, uploadSecrets, slotId } = params
+        const name = hre.network.name as CNetworkNames
+        const isTestnet = deployableChains[0].type === "testnet"
 
-    if (deployProxy) {
-        await deployProxyAdmin(hre, ProxyEnum.conceroRouterProxy)
-        await deployTransparentProxy(hre, ProxyEnum.conceroRouterProxy)
-        const [proxyAddress] = getEnvAddress(ProxyEnum.conceroRouterProxy, name)
-        const { functionsSubIds } = conceroNetworks[name]
-        if (!functionsSubIds) throw new Error(`No functionsSubIds found for ${name}`)
-        await addClfConsumer(conceroNetworks[name], [proxyAddress], Number(functionsSubIds[0]))
-    }
+        if (deployProxy) {
+            await deployProxyAdmin(hre, ProxyEnum.conceroRouterProxy)
+            await deployTransparentProxy(hre, ProxyEnum.conceroRouterProxy)
+            const [proxyAddress] = getEnvAddress(ProxyEnum.conceroRouterProxy, name)
+            const { functionsSubIds } = conceroNetworks[name]
+            if (!functionsSubIds) throw new Error(`No functionsSubIds found for ${name}`)
+            await addClfConsumer(conceroNetworks[name], [proxyAddress], Number(functionsSubIds[0]))
+        }
 
-    if (uploadSecrets) {
-        await uploadClfSecrets(
-            deployableChains,
-            slotId,
-            isTestnet ? CLF_SECRETS_TESTNET_EXPIRATION : CLF_SECRETS_MAINNET_EXPIRATION,
-        )
-    }
+        if (uploadSecrets) {
+            await uploadClfSecrets(
+                deployableChains,
+                slotId,
+                isTestnet ? CLF_SECRETS_TESTNET_EXPIRATION : CLF_SECRETS_MAINNET_EXPIRATION,
+            )
+        }
 
-    if (deployImplementation) {
-        await deployConceroRouterImplementation(hre, params)
-        await upgradeProxyImplementation(hre, false)
-    }
+        if (deployImplementation) {
+            await deployConceroRouterImplementation(hre, params)
+            await upgradeProxyImplementation(hre, false)
+        }
 
-    if (setVars) {
-        await setConceroRouterVars()
+        if (setVars) {
+            await setConceroRouterVars()
+        }
+    } catch (error) {
+        handleError(error, "deployConceroRouter")
     }
 }
 

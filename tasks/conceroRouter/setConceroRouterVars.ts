@@ -14,19 +14,21 @@ async function setConceroDstRouters() {
     const isTestnet = conceroNetworks[currentChainName].type === "testnet"
     const liveChains = conceroChains[isTestnet ? "testnet" : "mainnet"].infra
     const { publicClient, walletClient } = getClients(conceroNetworks[currentChainName].viemChain)
-    const currentChainConceroRouter = getEnvVar(`CONCERO_ROUTER_PROXY${networkEnvKeys[currentChainName]}`) as Address
+    const currentChainConceroRouter = getEnvVar(`CONCERO_ROUTER_PROXY_${networkEnvKeys[currentChainName]}`) as Address
     const { abi: conceroRouterAbi } = await import("../../artifacts/contracts/ConceroRouter.sol/ConceroRouter.json")
 
     for (const dstChain of liveChains) {
-        const currentDstConceroRouter = await publicClient.readContract({
+        if (currentChainName === dstChain.name) continue
+
+        const currentDstConceroRouter = (await publicClient.readContract({
             address: currentChainConceroRouter,
             abi: conceroRouterAbi,
             functionName: "getDstConceroRouterByChain",
-            args: [dstChain.chainSelector],
-        })
-        const expectedDstConceroRouter = getEnvVar(`CONCERO_ROUTER_PROXY${networkEnvKeys[dstChain.name]}`) as Address
+            args: [BigInt(dstChain.chainSelector)],
+        })) as Address
+        const expectedDstConceroRouter = getEnvVar(`CONCERO_ROUTER_PROXY_${networkEnvKeys[dstChain.name]}`) as Address
 
-        if (currentChainConceroRouter.toLowerCase() !== expectedDstConceroRouter.toLowerCase()) {
+        if (currentDstConceroRouter.toLowerCase() === expectedDstConceroRouter.toLowerCase()) {
             const logMessage = `[Skip] ${currentChainConceroRouter}.dstRouter${currentDstConceroRouter}. Already set`
             log(logMessage, "setDstConceroRouter", currentChainName)
             continue
@@ -37,7 +39,7 @@ async function setConceroDstRouters() {
                 account: walletClient.account,
                 address: currentChainConceroRouter,
                 abi: conceroRouterAbi,
-                functionName: "setDstConceroRouter",
+                functionName: "setDstConceroRouterByChain",
                 args: [dstChain.chainSelector, expectedDstConceroRouter],
             })
         ).request

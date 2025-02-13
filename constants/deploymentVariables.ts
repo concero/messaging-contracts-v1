@@ -24,6 +24,7 @@ export enum ProxyEnum {
 
 export const envPrefixes: EnvPrefixes = {
     conceroRouterProxy: "CONCERO_ROUTER_PROXY",
+    conceroRouter: "CONCERO_ROUTER",
     conceroRouterProxyAdmin: "CONCERO_ROUTER_PROXY_ADMIN",
     create3Factory: "CREATE3_FACTORY",
     pause: "CONCERO_PAUSE",
