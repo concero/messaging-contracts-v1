@@ -4,6 +4,7 @@
     try {
         const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
         const encodeParam = (hexString, length) => {
+            hexString = hexString.slice(2);
             const res = new Uint8Array(length);
             for (let i = 0; i < res.length; i++) {
                 res[i] = parseInt(hexString.slice(i * 2, i * 2 + 2), 16);
@@ -12,8 +13,8 @@
         };
 
         const constructResult = (receiver, sender, srcChainSelector, gasLimit, messageData) => {
-            const encodedReceiver = encodeParam(receiver.slice(2), 20);
-            const encodedSender = encodeParam(sender.slice(2), 20);
+            const encodedReceiver = encodeParam(receiver, 20);
+            const encodedSender = encodeParam(sender, 20);
             const encodedSrcChainSelector = encodeParam(srcChainSelector, 8);
             const encodedGasLimit = encodeParam(gasLimit, 3);
             const encodedMessageData = ethers.getBytes(messageData);
