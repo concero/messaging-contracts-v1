@@ -1,14 +1,15 @@
 import { getEnvVar } from "../../utils"
+import getHashSum from "../../utils/getHashSum"
 
 type ArgBuilder = () => Promise<string[]>
 
 export const getSimulationArgs: { [functionName: string]: ArgBuilder } = {
     src: async () => {
         const dstContractAddress = getEnvVar("CONCERO_ROUTER_PROXY_BASE_SEPOLIA")
-        const conceroMessageId = "0x32452"
+        const conceroMessageId = getHashSum("concero message id")
         const srcChainSelector = "0x" + BigInt(getEnvVar("CL_CCIP_CHAIN_SELECTOR_ARBITRUM_SEPOLIA")).toString(16)
         const dstChainSelector = "0x" + BigInt(getEnvVar("CL_CCIP_CHAIN_SELECTOR_BASE_SEPOLIA")).toString(16)
-        const txDataHash = "0x3"
+        const txDataHash = getHashSum("tx data")
 
         return [
             "0x0",

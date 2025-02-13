@@ -32,11 +32,7 @@
             },
         },
         [`0x${BigInt('${CL_CCIP_CHAIN_SELECTOR_ARBITRUM_SEPOLIA}').toString(16)}`]: {
-            urls: [
-                'https://arbitrum-sepolia-rpc.publicnode.com',
-                'https://api.zan.top/arb-sepolia',
-                'https://sepolia-rollup.arbitrum.io/rpc',
-            ],
+            urls: ['https://arbitrum-sepolia-rpc.publicnode.com', 'https://sepolia-rollup.arbitrum.io/rpc'],
             chainId: '0x66eee',
             nativeCurrency: 'eth',
             priceFeed: {
