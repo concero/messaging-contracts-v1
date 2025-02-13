@@ -26,4 +26,10 @@ abstract contract ConceroRouterStorage is IConceroRouterStorage {
 
     // @dev price feed mappings
     mapping(uint64 chainSelector => uint256 gasPrice) internal s_lastGasPrices;
+
+    /* GETTERS */
+
+    function getMessageHashById(bytes32 conceroMessageId) external view returns (bytes32) {
+        return s_messageHashByConceroMessageId[conceroMessageId];
+    }
 }

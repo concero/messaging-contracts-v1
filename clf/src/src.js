@@ -1,13 +1,5 @@
-/*
-Simulation requirements:
-numAllowedQueries: 2 – a minimum to initialise Viem.
- */
-// todo: convert var names to single characters
-/*BUILD_REMOVES_EVERYTHING_ABOVE_THIS_LINE*/
-
 (async () => {
-    const [_, __, ___, dstContractAddress, conceroMessageId, srcChainSelector, dstChainSelector, txDataHash] =
-        bytesArgs;
+    const [, , , dstContractAddress, conceroMessageId, srcChainSelector, dstChainSelector, txDataHash] = bytesArgs;
     const chainSelectors = {
         [`0x${BigInt('${CL_CCIP_CHAIN_SELECTOR_FUJI}').toString(16)}`]: {
             urls: [`https://avalanche-fuji.infura.io/v3/${secrets.INFURA_API_KEY}`],
@@ -280,9 +272,9 @@ numAllowedQueries: 2 – a minimum to initialise Viem.
 
     const sendTransaction = async (contract, signer, txOptions) => {
         try {
-            if ((await contract.s_transactions(conceroMessageId))[0] !== ethers.ZeroHash) return;
+            if ((await contract.getMessageHashById(conceroMessageId))[0] !== ethers.ZeroHash) return;
 
-            await contract.addUnconfirmedTX(conceroMessageId, srcChainSelector, txDataHash, txOptions);
+            await contract.receiveUnconfirmedMessage(conceroMessageId, srcChainSelector, txDataHash, txOptions);
         } catch (err) {
             const { message, code } = err;
             if (retries >= 5) {
@@ -337,8 +329,8 @@ numAllowedQueries: 2 – a minimum to initialise Viem.
         const wallet = new ethers.Wallet('0x' + secrets.MESSENGER_0_PRIVATE_KEY, provider);
         const signer = wallet.connect(provider);
         const abi = [
-            'function addUnconfirmedTX(bytes32, uint64, bytes32) external',
-            'function s_transactions(bytes32) view returns (bytes32, address, address, uint256, uint8, uint64, bool, bytes)',
+            'function receiveUnconfirmedMessage(bytes32, uint64, bytes32) external',
+            'function getMessageHashById(bytes32) view returns (bytes32, address, address, uint256, uint8, uint64, bool, bytes)',
         ];
         const contract = new ethers.Contract(dstContractAddress, abi, signer);
         const [feeData, nonce] = await Promise.all([
