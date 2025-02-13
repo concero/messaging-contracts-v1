@@ -16,7 +16,7 @@
             const encodedReceiver = encodeParam(receiver, 20);
             const encodedSender = encodeParam(sender, 20);
             const encodedSrcChainSelector = encodeParam(srcChainSelector, 8);
-            const encodedGasLimit = encodeParam(gasLimit, 3);
+            const encodedGasLimit = encodeParam(gasLimit, 4);
             const encodedMessageData = ethers.getBytes(messageData);
 
             const totalLength =

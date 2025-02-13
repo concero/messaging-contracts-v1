@@ -194,6 +194,29 @@ contract ConceroRouterTest is Test {
         assertEq(s_conceroRouter.exposed_isMessageConfirmed(conceroMessageId), true);
     }
 
+    function test_checkReport() public {
+        bytes
+            memory response = hex"05f95df8f7840aaea68343a7e89fe4e96a3667bbdddddb8a8e41c194ac6542a0ad7ba663a72741e0304611b6affba76af42400";
+        bytes memory err = new bytes(0);
+        bytes32 clfReqId = keccak256("clf req id");
+
+        s_conceroRouter.exposed_setClfReqTypeByClfReqId(
+            clfReqId,
+            IConceroRouterStorage.ClfReqType.ConfirmMessage
+        );
+        s_conceroRouter.exposed_setConceroMessageIdByClfReqId(
+            clfReqId,
+            keccak256("concero message id")
+        );
+        s_conceroRouter.exposed_setMessageHashByConceroMessageId(
+            keccak256("concero message id"),
+            keccak256("concero message hash")
+        );
+
+        vm.prank(s_conceroRouter.exposed_getClfRouter());
+        FunctionsClient(address(s_conceroRouter)).handleOracleFulfillment(clfReqId, response, err);
+    }
+
     /* REVERT TESTS */
 
     function test_sendMessageInvalidMessageDataSize_revert() public {
