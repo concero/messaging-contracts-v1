@@ -9,7 +9,6 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IConceroRouter} from "./interfaces/IConceroRouter.sol";
 import {IConceroClient} from "./ConceroClient/interfaces/IConceroClient.sol";
-import {console} from "forge-std/src/console.sol";
 
 contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
     using SafeERC20 for IERC20;
@@ -309,7 +308,7 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
             address receiver,
             address sender,
             uint64 srcChainSelector,
-            uint32 gasLimit,
+            uint64 gasLimit,
             bytes memory messageData
         ) = _decodeConfirmMessageClfResp(response);
 
@@ -380,7 +379,7 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
             address receiver,
             address sender,
             uint64 srcChainSelector,
-            uint32 gasLimit,
+            uint64 gasLimit,
             bytes memory messageData
         )
     {
@@ -388,16 +387,14 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
             receiver := mload(add(response, 20))
             sender := mload(add(response, 40))
             srcChainSelector := mload(add(response, 48))
-            gasLimit := mload(add(response, 52))
+            gasLimit := mload(add(response, 56))
         }
-
-        console.logUint(uint256(gasLimit));
 
         if (response.length > 52) {
             uint256 messageDataLength = response.length - 52;
             messageData = new bytes(messageDataLength);
 
-            for (uint256 i; i < messageDataLength; i++) {
+            for (uint256 i; i < messageDataLength; ++i) {
                 messageData[i] = response[52 + i];
             }
         }

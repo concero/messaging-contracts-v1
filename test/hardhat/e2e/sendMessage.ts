@@ -9,8 +9,8 @@ import { Address } from "viem"
 describe("sendMessage\n", async () => {
     it("should send and receiveMessage in test concero client", async () => {
         try {
-            const srcChain = conceroNetworks.arbitrumSepolia
-            const dstChain = conceroNetworks.baseSepolia
+            const srcChain = conceroNetworks.baseSepolia
+            const dstChain = conceroNetworks.avalancheFuji
             const srcChainConceroRouter = getEnvVar(`CONCERO_ROUTER_PROXY_${networkEnvKeys[srcChain.name]}`) as Address
             const srcChainUsdc = getEnvVar(`USDC_${networkEnvKeys[srcChain.name]}`) as Address
             const { publicClient: srcChainPublicClient, walletClient: srcChainWalletClient } =
@@ -33,7 +33,7 @@ describe("sendMessage\n", async () => {
                 receiver: getEnvVar(`CONCERO_TEST_CLIENT_${networkEnvKeys[dstChain.name]}`) as Address,
                 dstChainSelector: BigInt(dstChain.chainSelector),
                 dstChainGasLimit: 1_000_000n,
-                data: "0x",
+                data: "0x0000001",
             }
 
             const sendMessageReq = (
