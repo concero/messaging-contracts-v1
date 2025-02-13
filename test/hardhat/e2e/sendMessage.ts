@@ -33,7 +33,7 @@ describe("sendMessage\n", async () => {
                 receiver: getEnvVar(`CONCERO_TEST_CLIENT_${networkEnvKeys[dstChain.name]}`) as Address,
                 dstChainSelector: BigInt(dstChain.chainSelector),
                 dstChainGasLimit: 1_000_000n,
-                data: "0x0001",
+                data: "0x",
             }
 
             const sendMessageReq = (

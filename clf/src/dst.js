@@ -12,8 +12,8 @@
         };
 
         const constructResult = (receiver, sender, srcChainSelector, gasLimit, messageData) => {
-            const encodedReceiver = encodeParam(receiver, 20);
-            const encodedSender = encodeParam(sender, 20);
+            const encodedReceiver = encodeParam(receiver.slice(2), 20);
+            const encodedSender = encodeParam(sender.slice(2), 20);
             const encodedSrcChainSelector = encodeParam(srcChainSelector, 8);
             const encodedGasLimit = encodeParam(gasLimit, 3);
             const encodedMessageData = ethers.getBytes(messageData);
@@ -40,6 +40,7 @@
             offset += encodedGasLimit.length;
 
             result.set(encodedMessageData, offset);
+
             return result;
         };
 
