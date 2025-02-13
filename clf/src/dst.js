@@ -229,7 +229,7 @@
 
         const gasLimit = new ethers.AbiCoder().decode(['tuple(uint32)'], decodedLog.args[3]);
 
-        return constructResult(receiver, sender, srcChainSelector, gasLimit, messageData);
+        return constructResult(receiver, sender, srcChainSelector, '0x' + gasLimit[0][0].toString(16), messageData);
     } catch (error) {
         throw new Error(error.message.slice(0, 255));
     }

@@ -25,9 +25,9 @@ export const getSimulationArgs: { [functionName: string]: ArgBuilder } = {
     dst: async () => {
         const srcContractAddress = getEnvVar("CONCERO_ROUTER_PROXY_ARBITRUM_SEPOLIA")
         const srcChainSelector = "0x" + BigInt(getEnvVar("CL_CCIP_CHAIN_SELECTOR_ARBITRUM_SEPOLIA")).toString(16)
-        const messageId = "0x463e37b9af1bca4078a100f717fb76bbc78d051e483331e82cde9f37ac086dbc"
+        const messageId = "0x0c1f6cb07fbb525a2e0d3f29091e2fb24eba41a5dcecdc31a7fc2ea80b432cf5"
         const dstChainSelector = "0x" + BigInt(getEnvVar("CL_CCIP_CHAIN_SELECTOR_BASE_SEPOLIA")).toString(16)
-        const messageHash = "0xb0378cbddcf299adbdfe0724170282235bf8d7952cff085342cba8bc64de54dd"
+        const messageHash = "0x74aca711e0d973b7f96af06d1d851e1dbd1024cb83fe4f8a91eb235d6a7dbfa0"
 
         return ["0x0", "0x0", "0x0", srcContractAddress, srcChainSelector, dstChainSelector, messageId, messageHash]
     },
