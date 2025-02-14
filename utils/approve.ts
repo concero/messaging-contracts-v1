@@ -1,4 +1,5 @@
 import { Account, Address, Chain, erc20Abi, HttpTransport, PublicClient, RpcSchema, WalletClient } from "viem"
+import { viemReceiptConfig } from "../constants/deploymentVariables"
 
 export async function approve(
     erc20TokenAddress: Address,
@@ -26,5 +27,5 @@ export async function approve(
         args: [contractAddress, amount],
     })
 
-    await publicClient.waitForTransactionReceipt({ hash: tokenHash })
+    await publicClient.waitForTransactionReceipt({ ...viemReceiptConfig, hash: tokenHash })
 }
