@@ -14,6 +14,37 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
     using SafeERC20 for IERC20;
     using FunctionsRequest for FunctionsRequest.Request;
 
+    /* TYPES */
+
+    struct EvmArgs {
+        uint32 dstChainGasLimit;
+    }
+
+    /* EVENTS */
+
+    event ConceroMessageSent(
+        bytes32 indexed messageId,
+        address sender,
+        address receiver,
+        bytes extraArgs,
+        bytes data
+    );
+    event ConfirmMessageClfReqError(bytes32 indexed conceroMessageId);
+    event ClfReqFailed(bytes32 indexed clfReqId, uint8, bytes error);
+    event UnconfirmedMessageReceived(bytes32 indexed conceroMessageId);
+    event MessageReceived(bytes32 indexed conceroMessageId);
+
+    /* ERRORS */
+
+    error UnexpectedCLFRequestId();
+    error UnknownClfReqType();
+    error NotMessenger();
+    error NotAdmin();
+    error MessageAlreadyExists();
+    error MessageDoesntExist();
+    error MessageAlreadyConfirmed();
+    error MessageDataHashMismatch();
+
     /* CONSTANT VARIABLES */
 
     address internal constant ZERO_ADDRESS = address(0);
@@ -137,7 +168,7 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
 
     /* VIEW FUNCTIONS */
 
-    function getFeeInUsdc(uint64 dstChainSelector) external view returns (uint256) {
+    function getFee(uint64 dstChainSelector, address, uint32) external view returns (uint256) {
         return _getFeeInUsdc(dstChainSelector);
     }
 

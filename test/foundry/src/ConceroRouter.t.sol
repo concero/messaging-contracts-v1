@@ -69,17 +69,21 @@ contract ConceroRouterTest is Test {
             data: messageData
         });
 
-        uint256 feeInUsdc = s_conceroRouter.getFeeInUsdc(s_arbChainSelector);
+        uint256 feeInUsdc = s_conceroRouter.getFee(
+            s_arbChainSelector,
+            s_usdcBase,
+            dstChainGasLimit
+        );
         IERC20(s_usdcBase).approve(address(s_conceroRouter), feeInUsdc);
 
         //         @dev check only data without indexed id
         vm.pauseGasMetering();
         vm.expectEmit(false, false, false, true, address(s_conceroRouter));
-        emit IConceroRouter.ConceroMessageSent(
+        emit ConceroRouter.ConceroMessageSent(
             bytes32(0),
             client,
             client,
-            abi.encode(IConceroRouter.EvmArgs({dstChainGasLimit: dstChainGasLimit})),
+            abi.encode(ConceroRouter.EvmArgs({dstChainGasLimit: dstChainGasLimit})),
             messageData
         );
         vm.resumeGasMetering();
@@ -252,7 +256,11 @@ contract ConceroRouterTest is Test {
 
         deal(s_usdcBase, client, 100 * USDC_DECIMALS);
         vm.startPrank(client);
-        uint256 feeInUsdc = s_conceroRouter.getFeeInUsdc(s_arbChainSelector);
+        uint256 feeInUsdc = s_conceroRouter.getFee(
+            s_arbChainSelector,
+            s_usdcBase,
+            messageReq.dstChainGasLimit
+        );
         IERC20(s_usdcBase).approve(address(s_conceroRouter), feeInUsdc);
 
         vm.expectRevert(IConceroRouter.InvalidChainSelector.selector);
@@ -282,19 +290,19 @@ contract ConceroRouterTest is Test {
     function test_receiveUnconfirmedMessageNotMessenger_revert() public {
         vm.startPrank(makeAddr("not messenger"));
 
-        vm.expectRevert(IConceroRouter.NotMessenger.selector);
+        vm.expectRevert(ConceroRouter.NotMessenger.selector);
         s_conceroRouter.receiveUnconfirmedMessage(bytes32(0), uint64(0), bytes32(0));
     }
 
     function test_setDstConceroRouterByChainNotAdmin_revert() public {
         vm.startPrank(makeAddr("not admin"));
-        vm.expectRevert(IConceroRouter.NotAdmin.selector);
+        vm.expectRevert(ConceroRouter.NotAdmin.selector);
         s_conceroRouter.setDstConceroRouterByChain(uint64(2), makeAddr("arb router"));
     }
 
     function test_setClfFeeInUsdcNotAdmin_revert() public {
         vm.startPrank(makeAddr("not admin"));
-        vm.expectRevert(IConceroRouter.NotAdmin.selector);
+        vm.expectRevert(ConceroRouter.NotAdmin.selector);
         s_conceroRouter.setClfFeeInUsdc(uint64(2), 100);
     }
 
@@ -322,7 +330,7 @@ contract ConceroRouterTest is Test {
             conceroMessageHash
         );
 
-        vm.expectRevert(IConceroRouter.MessageAlreadyExists.selector);
+        vm.expectRevert(ConceroRouter.MessageAlreadyExists.selector);
         s_conceroRouter.receiveUnconfirmedMessage(
             conceroMessageId,
             s_arbChainSelector,
@@ -345,7 +353,7 @@ contract ConceroRouterTest is Test {
         bytes memory err = new bytes(0);
 
         vm.startPrank(s_conceroRouter.exposed_getClfRouter());
-        vm.expectRevert(IConceroRouter.UnexpectedCLFRequestId.selector);
+        vm.expectRevert(ConceroRouter.UnexpectedCLFRequestId.selector);
         FunctionsClient(address(s_conceroRouter)).handleOracleFulfillment(clfReqId, response, err);
     }
 
@@ -394,7 +402,7 @@ contract ConceroRouterTest is Test {
             IConceroRouterStorage.ClfReqType.ConfirmMessage
         );
 
-        vm.expectRevert(IConceroRouter.MessageAlreadyConfirmed.selector);
+        vm.expectRevert(ConceroRouter.MessageAlreadyConfirmed.selector);
         FunctionsClient(address(s_conceroRouter)).handleOracleFulfillment(clfReqId, response, err);
     }
 }

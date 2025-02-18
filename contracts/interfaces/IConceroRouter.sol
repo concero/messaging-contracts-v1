@@ -9,14 +9,6 @@ interface IConceroRouter {
     error MessageTooLarge();
     error InvalidDstChainGasLimit();
     error InvalidChainSelector();
-    error UnexpectedCLFRequestId();
-    error UnknownClfReqType();
-    error NotMessenger();
-    error NotAdmin();
-    error MessageAlreadyExists();
-    error MessageDoesntExist();
-    error MessageAlreadyConfirmed();
-    error MessageDataHashMismatch();
 
     /* TYPES */
     struct MessageRequest {
@@ -27,20 +19,11 @@ interface IConceroRouter {
         bytes data;
     }
 
-    struct EvmArgs {
-        uint32 dstChainGasLimit;
-    }
+    function getFee(
+        uint64 dstChainSelector,
+        address feeToken,
+        uint32 dstChainGasLimit
+    ) external view returns (uint256);
 
-    /* EVENTS */
-    event ConceroMessageSent(
-        bytes32 indexed messageId,
-        address sender,
-        address receiver,
-        bytes extraArgs,
-        bytes data
-    );
-    event ConfirmMessageClfReqError(bytes32 indexed conceroMessageId);
-    event ClfReqFailed(bytes32 indexed clfReqId, uint8, bytes error);
-    event UnconfirmedMessageReceived(bytes32 indexed conceroMessageId);
-    event MessageReceived(bytes32 indexed conceroMessageId);
+    function sendMessage(MessageRequest calldata messageRequest) external returns (bytes32);
 }
