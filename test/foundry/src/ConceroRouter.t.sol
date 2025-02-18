@@ -10,6 +10,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {VmSafe} from "forge-std/src/Vm.sol";
 import {FunctionsClient} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/FunctionsClient.sol";
 import {ConceroClientMock} from "../mocks/ConceroClientMock.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
 contract ConceroRouterTest is Test {
     /* CONSTANTS */
@@ -295,12 +296,6 @@ contract ConceroRouterTest is Test {
         vm.startPrank(makeAddr("not admin"));
         vm.expectRevert(IConceroRouter.NotAdmin.selector);
         s_conceroRouter.setClfFeeInUsdc(uint64(2), 100);
-    }
-
-    function test_setDstConceroRouterByChainInvalidConceroRouter_revert() public {
-        vm.startPrank(s_conceroRouter.exposed_getAdmin());
-        vm.expectRevert(IConceroRouter.InvalidConceroRouter.selector);
-        s_conceroRouter.setDstConceroRouterByChain(uint64(2), address(0));
     }
 
     function test_setDstConceroRouterByChainInvalidChainSelector_revert() public {

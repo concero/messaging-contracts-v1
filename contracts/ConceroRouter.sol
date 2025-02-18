@@ -16,6 +16,8 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
 
     /* CONSTANT VARIABLES */
 
+    address internal constant ZERO_ADDRESS = address(0);
+    bytes32 internal constant ZERO_BYTES_32 = bytes32(0);
     uint24 internal constant MAX_DST_CHAIN_GAS_LIMIT = 1_500_000;
     uint32 internal constant MAX_MESSAGE_SIZE = 949;
     uint32 internal constant CLF_SRC_CALLBACK_GAS_LIMIT = 150_000;
@@ -133,23 +135,27 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
         return messageId;
     }
 
+    /* VIEW FUNCTIONS */
+
     function getFeeInUsdc(uint64 dstChainSelector) external view returns (uint256) {
         return _getFeeInUsdc(dstChainSelector);
     }
+
+    /* MESSENGER FUNCTIONS */
 
     function receiveUnconfirmedMessage(
         bytes32 messageId,
         uint64 srcChainSelector,
         bytes32 messageHash
     ) external onlyMessenger {
-        if (s_messageHashByConceroMessageId[messageId] == bytes32(0)) {
+        if (s_messageHashByConceroMessageId[messageId] == ZERO_BYTES_32) {
             s_messageHashByConceroMessageId[messageId] = messageHash;
         } else {
             revert MessageAlreadyExists();
         }
 
         address srcConceroRouter = s_dstConceroRouterByChain[srcChainSelector];
-        if (srcConceroRouter == address(0)) {
+        if (srcConceroRouter == ZERO_ADDRESS) {
             revert InvalidChainSelector();
         }
 
@@ -177,7 +183,6 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
         uint64 dstChainSelector,
         address conceroRouter
     ) external payable onlyAdmin {
-        require(conceroRouter != address(0), InvalidConceroRouter());
         require(
             dstChainSelector != i_chainSelector && dstChainSelector != 0,
             InvalidChainSelector()
@@ -199,7 +204,7 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
             revert UnsupportedFeeToken();
         }
 
-        if (message.receiver == address(0)) {
+        if (message.receiver == ZERO_ADDRESS) {
             revert InvalidReceiver();
         }
 
@@ -232,7 +237,7 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
     ) internal {
         address dstConceroRouter = s_dstConceroRouterByChain[dstChainSelector];
 
-        if (dstConceroRouter == address(0)) {
+        if (dstConceroRouter == ZERO_ADDRESS) {
             revert InvalidChainSelector();
         }
 
@@ -300,7 +305,7 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
         }
 
         bytes32 conceroMessageHash = s_messageHashByConceroMessageId[conceroMessageId];
-        if (conceroMessageHash == bytes32(0)) {
+        if (conceroMessageHash == ZERO_BYTES_32) {
             revert MessageDoesntExist();
         }
 
