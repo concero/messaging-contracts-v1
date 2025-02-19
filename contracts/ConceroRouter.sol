@@ -143,7 +143,6 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
             )
         );
 
-        // @dev TODO: should we include dstChainGasLimit (extra args) to this hash?
         bytes32 messageHash = keccak256(
             abi.encode(
                 messageId,
