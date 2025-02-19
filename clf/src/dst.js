@@ -227,7 +227,7 @@
             throw new Error('MessageDataHash mismatch');
         }
 
-        const gasLimit = args[3];
+        const gasLimit = decodedLog.args[3];
 
         return constructResult(receiver, sender, srcChainSelector, gasLimit, messageData);
     } catch (error) {
