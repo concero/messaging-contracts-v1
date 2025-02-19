@@ -14,19 +14,13 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
     using SafeERC20 for IERC20;
     using FunctionsRequest for FunctionsRequest.Request;
 
-    /* TYPES */
-
-    struct EvmArgs {
-        uint32 dstChainGasLimit;
-    }
-
     /* EVENTS */
 
     event ConceroMessageSent(
         bytes32 indexed messageId,
         address sender,
         address receiver,
-        bytes extraArgs,
+        uint32 dstChainGasLimit,
         bytes data
     );
     event ConfirmMessageClfReqError(bytes32 indexed conceroMessageId);
@@ -44,13 +38,14 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
     error MessageDoesntExist();
     error MessageAlreadyConfirmed();
     error MessageDataHashMismatch();
+    error FailedToWithdrawFee();
 
     /* CONSTANT VARIABLES */
 
     address internal constant ZERO_ADDRESS = address(0);
     bytes32 internal constant ZERO_BYTES_32 = bytes32(0);
     uint24 internal constant MAX_DST_CHAIN_GAS_LIMIT = 1_500_000;
-    uint32 internal constant MAX_MESSAGE_SIZE = 949;
+    uint32 internal constant MAX_MESSAGE_LENGTH_BYTES = 949;
     uint32 internal constant CLF_SRC_CALLBACK_GAS_LIMIT = 150_000;
     uint32 internal constant CLF_DST_CALLBACK_GAS_LIMIT = 2_000_000;
     uint64 internal constant HALF_DST_GAS = 200_000;
@@ -127,8 +122,11 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
     function sendMessage(MessageRequest calldata messageReq) external returns (bytes32) {
         _validateMessageReq(messageReq);
 
-        uint256 fee = _getFeeInUsdc(messageReq.dstChainSelector);
-        IERC20(messageReq.feeToken).safeTransferFrom(msg.sender, address(this), fee);
+        IERC20(messageReq.feeToken).safeTransferFrom(
+            msg.sender,
+            address(this),
+            _getFeeInUsdc(messageReq.dstChainSelector)
+        );
 
         bytes32 messageId = keccak256(
             abi.encode(
@@ -159,7 +157,7 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
             messageId,
             msg.sender,
             messageReq.receiver,
-            abi.encode(EvmArgs({dstChainGasLimit: messageReq.dstChainGasLimit})),
+            messageReq.dstChainGasLimit,
             messageReq.data
         );
 
@@ -210,6 +208,17 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
 
     /* ADMIN FUNCTIONS */
 
+    function withdrawFee(address token) external payable onlyAdmin {
+        require(token == ZERO_ADDRESS || token == i_usdc, UnsupportedFeeToken());
+
+        if (token == ZERO_ADDRESS) {
+            (bool success, ) = i_admin.call{value: address(this).balance}("");
+            require(success, FailedToWithdrawFee());
+        } else {
+            IERC20(token).safeTransfer(i_admin, IERC20(token).balanceOf(address(this)));
+        }
+    }
+
     function setDstConceroRouterByChain(
         uint64 dstChainSelector,
         address conceroRouter
@@ -239,7 +248,7 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
             revert InvalidReceiver();
         }
 
-        if (message.data.length > MAX_MESSAGE_SIZE) {
+        if (message.data.length > MAX_MESSAGE_LENGTH_BYTES) {
             revert MessageTooLarge();
         }
 
@@ -344,7 +353,7 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
             address receiver,
             address sender,
             uint64 srcChainSelector,
-            uint24 gasLimit,
+            uint32 gasLimit,
             bytes memory messageData
         ) = _decodeConfirmMessageClfResp(response);
 
@@ -363,6 +372,7 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
             revert MessageDataHashMismatch();
         }
 
+        // @dev TODO: mb excessevly safe call
         IConceroClient(receiver).conceroReceive{gas: gasLimit}(
             IConceroClient.Message({
                 id: conceroMessageId,
@@ -415,7 +425,7 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
             address receiver,
             address sender,
             uint64 srcChainSelector,
-            uint24 gasLimit,
+            uint32 gasLimit,
             bytes memory messageData
         )
     {
@@ -423,15 +433,15 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
             receiver := mload(add(response, 20))
             sender := mload(add(response, 40))
             srcChainSelector := mload(add(response, 48))
-            gasLimit := mload(add(response, 51))
+            gasLimit := mload(add(response, 52))
         }
 
-        if (response.length > 51) {
-            uint256 messageDataLength = response.length - 51;
+        if (response.length > 52) {
+            uint256 messageDataLength = response.length - 52;
             messageData = new bytes(messageDataLength);
 
             for (uint256 i; i < messageDataLength; ++i) {
-                messageData[i] = response[51 + i];
+                messageData[i] = response[52 + i];
             }
         }
     }

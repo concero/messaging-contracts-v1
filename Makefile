@@ -36,7 +36,10 @@ gas_snapshot:
 	forge snapshot $(args)
 
 coverage:
-	forge coverage $(args)
+	forge coverage --report lcov
+	genhtml --ignore-errors inconsistent --ignore-errors corrupt --ignore-errors category -o ./coverage_report ./lcov.info
+	open ./coverage_report/index.html
+	rm -rf lcov.info
 
 .PHONY: all test
 

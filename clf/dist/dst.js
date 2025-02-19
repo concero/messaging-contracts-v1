@@ -14,7 +14,7 @@
             const encodedReceiver = encodeParam(receiver, 20);
             const encodedSender = encodeParam(sender, 20);
             const encodedSrcChainSelector = encodeParam(srcChainSelector, 8);
-            const encodedGasLimit = encodeParam(gasLimit, 3);
+            const encodedGasLimit = encodeParam(gasLimit, 4);
             const encodedMessageData = ethers.getBytes(messageData);
             const totalLength =
                 encodedReceiver.length +
@@ -139,8 +139,8 @@
                 return result;
             }
         }
-        const abi = ['event ConceroMessageSent(bytes32 indexed, address, address, bytes, bytes)'];
-        const topic0 = ethers.id('ConceroMessageSent(bytes32,address,address,bytes,bytes)');
+        const abi = ['event ConceroMessageSent(bytes32 indexed, address, address, uint32, bytes)'];
+        const topic0 = ethers.id('ConceroMessageSent(bytes32,address,address,uint32,bytes)');
         const contract = new ethers.Interface(abi);
         const { urls: rpcsUrls, confirmations } = chainMap[srcChainSelector];
         let getLogsRetryCounter = 5;
@@ -199,8 +199,8 @@
         if (recomputedTxDataHash.toLowerCase() !== txDataHash.toLowerCase()) {
             throw new Error('MessageDataHash mismatch');
         }
-        const gasLimit = new ethers.AbiCoder().decode(['tuple(uint32)'], decodedLog.args[3])[0][0];
-        return constructResult(receiver, sender, srcChainSelector, '0x' + gasLimit.toString(16) + '0', messageData);
+        const gasLimit = args[3];
+        return constructResult(receiver, sender, srcChainSelector, gasLimit, messageData);
     } catch (error) {
         throw new Error(error.message.slice(0, 255));
     }
