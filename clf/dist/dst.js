@@ -139,8 +139,8 @@
                 return result;
             }
         }
-        const abi = ['event ConceroMessageSent(bytes32 indexed, address, address, uint32, bytes)'];
-        const topic0 = ethers.id('ConceroMessageSent(bytes32,address,address,uint32,bytes)');
+        const abi = ['event ConceroMessageSent(bytes32 indexed, address, address, bytes, bytes)'];
+        const topic0 = ethers.id('ConceroMessageSent(bytes32,address,address,bytes,bytes)');
         const contract = new ethers.Interface(abi);
         const { urls: rpcsUrls, confirmations } = chainMap[srcChainSelector];
         let getLogsRetryCounter = 5;
@@ -199,7 +199,9 @@
         if (recomputedTxDataHash.toLowerCase() !== txDataHash.toLowerCase()) {
             throw new Error('MessageDataHash mismatch');
         }
-        const gasLimit = '0x' + decodedLog.args[3].toString(16).padStart(8, '0');
+        const gasLimit =
+            '0x' +
+            new ethers.AbiCoder().decode(['tuple(uint32)'], decodedLog.args[3])[0][0].toString(16).padStart(8, '0');
         return constructResult(receiver, sender, srcChainSelector, gasLimit, messageData);
     } catch (error) {
         throw new Error(error.message.slice(0, 255));

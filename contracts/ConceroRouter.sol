@@ -14,13 +14,17 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
     using SafeERC20 for IERC20;
     using FunctionsRequest for FunctionsRequest.Request;
 
+    struct ExtraArgs {
+        uint32 dstChainGasLimit;
+    }
+
     /* EVENTS */
 
     event ConceroMessageSent(
         bytes32 indexed messageId,
         address sender,
         address receiver,
-        uint32 dstChainGasLimit,
+        bytes extraArgs,
         bytes data
     );
     event ConfirmMessageClfReqError(bytes32 indexed conceroMessageId);
@@ -157,7 +161,7 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
             messageId,
             msg.sender,
             messageReq.receiver,
-            messageReq.dstChainGasLimit,
+            abi.encode(ExtraArgs({dstChainGasLimit: messageReq.dstChainGasLimit})),
             messageReq.data
         );
 
