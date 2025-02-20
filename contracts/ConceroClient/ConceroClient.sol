@@ -7,7 +7,7 @@ import {IConceroClient} from "./interfaces/IConceroClient.sol";
 abstract contract ConceroClient is IConceroClient {
     error InvalidConceroRouter(address router);
 
-    address private immutable i_conceroRouter;
+    address internal immutable i_conceroRouter;
 
     constructor(address router) {
         if (router == address(0)) {
