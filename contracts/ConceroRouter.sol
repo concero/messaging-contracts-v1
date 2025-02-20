@@ -173,6 +173,10 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
         return _getFeeInUsdc(dstChainSelector);
     }
 
+    function getLinkUsdcRate() external view returns (uint256) {
+        return s_latestLinkUsdcRate;
+    }
+
     /* MESSENGER FUNCTIONS */
 
     function receiveUnconfirmedMessage(

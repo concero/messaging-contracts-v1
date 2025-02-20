@@ -26,4 +26,6 @@ interface IConceroRouter {
     ) external view returns (uint256);
 
     function sendMessage(MessageRequest calldata messageRequest) external returns (bytes32);
+
+    function getLinkUsdcRate() external view returns (uint256);
 }
