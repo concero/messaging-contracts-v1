@@ -375,7 +375,6 @@ contract ConceroRouter is ConceroRouterStorage, IConceroRouter, ClfClient {
             revert MessageDataHashMismatch();
         }
 
-        // @dev TODO: mb excessevly safe call
         IConceroClient(receiver).conceroReceive{gas: gasLimit}(
             IConceroClient.Message({
                 id: conceroMessageId,
