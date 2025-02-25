@@ -74,7 +74,7 @@ contract ConceroRouterHarness is ConceroRouter {
     /* GETTERS */
 
     function exposed_getMaxMessageDataSize() external pure returns (uint256) {
-        return MAX_MESSAGE_SIZE;
+        return MAX_MESSAGE_LENGTH_BYTES;
     }
 
     function exposed_getMaxDstChainGasLimit() external pure returns (uint32) {

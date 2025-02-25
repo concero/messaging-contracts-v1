@@ -10,7 +10,7 @@ export const rpcUrls: Record<string, string[]> = {
     polygon: ["https://rpc.ankr.com/polygon", "https://polygon-bor-rpc.publicnode.com"],
     polygonAmoy: ["https://polygon-amoy-bor-rpc.publicnode.com"],
     base: [`https://base-rpc.publicnode.com`, "https://rpc.ankr.com/base"],
-    baseSepolia: ["https://rpc.ankr.com/base_sepolia"],
+    baseSepolia: ["https://base-sepolia-rpc.publicnode.com"],
     bsc: ["https://rpc.ankr.com/bsc"],
     scroll: ["https://rpc.ankr.com/scroll"],
     scrollSepolia: ["https://rpc.ankr.com/scroll_sepolia"],

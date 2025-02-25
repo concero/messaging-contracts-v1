@@ -83,7 +83,7 @@ contract ConceroRouterTest is Test {
             bytes32(0),
             client,
             client,
-            abi.encode(ConceroRouter.EvmArgs({dstChainGasLimit: dstChainGasLimit})),
+            abi.encode(ConceroRouter.ExtraArgs({dstChainGasLimit: dstChainGasLimit})),
             messageData
         );
         vm.resumeGasMetering();
