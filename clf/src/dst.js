@@ -130,6 +130,17 @@
                 confirmations: 3n,
                 chainId: '0xa86a',
             },
+            [`0x${BigInt('${CL_CCIP_CHAIN_SELECTOR_OPTIMISM}').toString(16)}`]: {
+                urls: [
+                    'https://optimism-rpc.publicnode.com',
+                    'https://rpc.ankr.com/optimism',
+                    'https://optimism.drpc.org',
+                    'https://optimism.llamarpc.com',
+                    'https://optimism.gateway.tenderly.co',
+                ],
+                confirmations: 3n,
+                chainId: '0xa',
+            },
         };
 
         class FunctionsJsonRpcProvider extends ethers.JsonRpcProvider {
