@@ -1,6 +1,6 @@
 // Purpose: To have a single source of truth for networks across the project
-import { type CNetwork, CNetworkNames, NetworkType } from "../types/CNetwork";
-import { HardhatNetworkUserConfig } from "hardhat/src/types/config";
+import { type CNetwork, CNetworkNames, NetworkType } from "../types/CNetwork"
+import { HardhatNetworkUserConfig } from "hardhat/src/types/config"
 import {
     arbitrum,
     arbitrumSepolia,
@@ -14,18 +14,18 @@ import {
     polygon,
     polygonAmoy,
     sepolia,
-} from "viem/chains";
-import { rpcUrls } from "./rpcUrls";
+} from "viem/chains"
+import { rpcUrls } from "./rpcUrls"
 
-const DEFAULT_BLOCK_CONFIRMATIONS = 2;
-const deployerPK = process.env.DEPLOYER_PRIVATE_KEY;
-const proxyDeployerPK = process.env.PROXY_DEPLOYER_PRIVATE_KEY;
-const saveDeployments = false;
+const DEFAULT_BLOCK_CONFIRMATIONS = 2
+const deployerPK = process.env.DEPLOYER_PRIVATE_KEY
+const proxyDeployerPK = process.env.PROXY_DEPLOYER_PRIVATE_KEY
+const saveDeployments = false
 
 export const networkTypes: Record<NetworkType, string> = {
     mainnet: "mainnet",
     testnet: "testnet",
-};
+}
 
 export const networkEnvKeys: Record<string, string> = {
     // mainnets
@@ -43,13 +43,13 @@ export const networkEnvKeys: Record<string, string> = {
     avalancheFuji: "FUJI",
     baseSepolia: "BASE_SEPOLIA",
     polygonAmoy: "POLYGON_AMOY",
-};
+}
 
 export const functionsGatewayUrls = {
     mainnet: ["https://01.functions-gateway.chain.link/", "https://02.functions-gateway.chain.link/"],
     localhost: ["https://01.functions-gateway.chain.link/", "https://02.functions-gateway.chain.link/"],
     testnet: ["https://01.functions-gateway.testnet.chain.link/", "https://02.functions-gateway.testnet.chain.link/"],
-};
+}
 
 export const conceroNetworks: Record<CNetworkNames, CNetwork> = {
     localhost: {
@@ -301,7 +301,7 @@ export const conceroNetworks: Record<CNetworkNames, CNetwork> = {
         type: networkTypes.mainnet,
         saveDeployments,
         chainId: 8453,
-        url: rpcUrls.arbitrum[0],
+        url: rpcUrls.base[0],
         rpcs: rpcUrls.base,
         accounts: [deployerPK, proxyDeployerPK],
         functionsDonId: process.env.CLF_DONID_BASE,
@@ -434,5 +434,5 @@ export const conceroNetworks: Record<CNetworkNames, CNetwork> = {
         viemChain: optimism,
         name: "optimism",
     },
-};
-export default conceroNetworks;
+}
+export default conceroNetworks
