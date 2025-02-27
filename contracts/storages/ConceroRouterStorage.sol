@@ -36,4 +36,10 @@ abstract contract ConceroRouterStorage is IConceroRouterStorage {
     function getDstConceroRouterByChain(uint64 dstChainSelector) external view returns (address) {
         return s_dstConceroRouterByChain[dstChainSelector];
     }
+
+    function getClfPremiumFeeInUsdcByChain(
+        uint64 dstChainSelector
+    ) external view returns (uint256) {
+        return s_clfFeesInUsdc[dstChainSelector];
+    }
 }
