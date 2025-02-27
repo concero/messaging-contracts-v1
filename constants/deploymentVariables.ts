@@ -1,7 +1,8 @@
 import type { WaitForTransactionReceiptParameters } from "viem/actions/public/waitForTransactionReceipt"
-import { WriteContractParameters } from "viem"
+import { parseUnits, WriteContractParameters } from "viem"
 import { EnvPrefixes } from "../types/deploymentVariables"
 import { getEnvVar } from "../utils/getEnvVar"
+import { arbitrum, avalanche, base, optimism, polygon } from "viem/chains"
 
 export const messengers: string[] = [
     getEnvVar("MESSENGER_0_ADDRESS"),
@@ -37,3 +38,11 @@ export const envPrefixes: EnvPrefixes = {
 }
 
 export const CONCERO_ROUTER_CLF_SECRETS_SLOT_ID = 0
+export const clfPremiumFeeInUsdc = {
+    [base.id]: parseUnits("0.06", 6),
+    [avalanche.id]: parseUnits("0.28", 6),
+    [optimism.id]: parseUnits("0.09", 6),
+    [polygon.id]: parseUnits("0.04", 6),
+    [arbitrum.id]: parseUnits("0.075", 6),
+}
+export const defaultClfPremiumFeeInUsdc = parseUnits("0.06", 6)

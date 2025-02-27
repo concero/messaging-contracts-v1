@@ -6,7 +6,7 @@ import { getClients } from "../../utils/getViemClients"
 import { getEnvVar } from "../../utils"
 import { Address } from "viem"
 import log from "../../utils/log"
-import { viemReceiptConfig } from "../../constants/deploymentVariables"
+import { clfPremiumFeeInUsdc, defaultClfPremiumFeeInUsdc, viemReceiptConfig } from "../../constants/deploymentVariables"
 
 async function setConceroDstRouters() {
     const hre: HardhatRuntimeEnvironment = require("hardhat")
@@ -65,6 +65,62 @@ async function setConceroDstRouters() {
     }
 }
 
+async function setClfPremiumFee() {
+    const hre: HardhatRuntimeEnvironment = require("hardhat")
+    const currentChainName = hre.network.name as CNetworkNames
+    const isTestnet = conceroNetworks[currentChainName].type === "testnet"
+    const liveChains = conceroChains[isTestnet ? "testnet" : "mainnet"].infra
+    const { publicClient, walletClient } = getClients(conceroNetworks[currentChainName].viemChain)
+    const currentChainConceroRouter = getEnvVar(`CONCERO_ROUTER_PROXY_${networkEnvKeys[currentChainName]}`) as Address
+    const { abi: conceroRouterAbi } = await import("../../artifacts/contracts/ConceroRouter.sol/ConceroRouter.json")
+
+    for (const dstChain of liveChains) {
+        const currentClfFee = (await publicClient.readContract({
+            address: currentChainConceroRouter,
+            abi: conceroRouterAbi,
+            functionName: "getClfPremiumFeeInUsdcByChain",
+            args: [BigInt(dstChain.chainSelector)],
+        })) as BigInt
+
+        const expectedFee = clfPremiumFeeInUsdc[dstChain.chainId] ?? defaultClfPremiumFeeInUsdc
+
+        if (expectedFee === currentClfFee) {
+            const logMessage = `[Skip] ${currentChainConceroRouter}.clfPremiumFee${expectedFee}. Already set`
+            log(logMessage, "setClfPremiumFee", currentChainName)
+            continue
+        }
+
+        const setClfPremiumFeeReq = (
+            await publicClient.simulateContract({
+                account: walletClient.account,
+                address: currentChainConceroRouter,
+                abi: conceroRouterAbi,
+                functionName: "setClfFeeInUsdc",
+                args: [dstChain.chainSelector, expectedFee],
+            })
+        ).request
+        const setClfPremiumFeeHash = await walletClient.writeContract(setClfPremiumFeeReq)
+        const setClfPremiumFeeStatus = (
+            await publicClient.waitForTransactionReceipt({ ...viemReceiptConfig, hash: setClfPremiumFeeHash })
+        ).status
+
+        if (setClfPremiumFeeStatus === "success") {
+            log(
+                `[Success] ${currentChainConceroRouter}.clfPremiumFee${expectedFee}. Set`,
+                "setClfPremiumFee",
+                currentChainName,
+            )
+        } else {
+            log(
+                `[Error] ${currentChainConceroRouter}.clfPremiumFee${expectedFee}. Failed`,
+                "setClfPremiumFee",
+                currentChainName,
+            )
+        }
+    }
+}
+
 export async function setConceroRouterVars() {
     await setConceroDstRouters()
+    await setClfPremiumFee()
 }
