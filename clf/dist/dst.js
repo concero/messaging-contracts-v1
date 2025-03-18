@@ -76,7 +76,6 @@
             [`0x${BigInt('4051577828743386545').toString(16)}`]: {
                 urls: [
                     'https://polygon-bor-rpc.publicnode.com',
-                    'https://rpc.ankr.com/polygon',
                     'https://polygon.llamarpc.com',
                     'https://polygon-rpc.com',
                     'https://polygon.drpc.org',
@@ -87,7 +86,6 @@
             [`0x${BigInt('4949039107694359620').toString(16)}`]: {
                 urls: [
                     'https://arbitrum-rpc.publicnode.com',
-                    'https://rpc.ankr.com/arbitrum',
                     'https://arbitrum.llamarpc.com',
                     'https://arbitrum-one-rpc.publicnode.com',
                     'https://arbitrum.gateway.tenderly.co',
@@ -99,7 +97,6 @@
             [`0x${BigInt('15971525489660198786').toString(16)}`]: {
                 urls: [
                     'https://base-rpc.publicnode.com',
-                    'https://rpc.ankr.com/base',
                     'https://base.gateway.tenderly.co',
                     'https://base.blockpi.network/v1/rpc/public',
                 ],
@@ -109,7 +106,6 @@
             [`0x${BigInt('6433500567565415381').toString(16)}`]: {
                 urls: [
                     'https://avalanche-c-chain-rpc.publicnode.com',
-                    'https://rpc.ankr.com/avalanche',
                     'https://avalanche.public-rpc.com',
                     'https://1rpc.io/avax/c',
                     'https://avalanche.drpc.org',
@@ -120,7 +116,6 @@
             [`0x${BigInt('3734403246176062136').toString(16)}`]: {
                 urls: [
                     'https://optimism-rpc.publicnode.com',
-                    'https://rpc.ankr.com/optimism',
                     'https://optimism.drpc.org',
                     'https://optimism.llamarpc.com',
                     'https://optimism.gateway.tenderly.co',

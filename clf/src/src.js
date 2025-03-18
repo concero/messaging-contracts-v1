@@ -92,7 +92,7 @@
         // mainnets
 
         [`0x${BigInt('${CL_CCIP_CHAIN_SELECTOR_BASE}').toString(16)}`]: {
-            urls: ['https://base-rpc.publicnode.com', 'https://rpc.ankr.com/base'],
+            urls: ['https://base-rpc.publicnode.com'],
             chainId: '0x2105',
             nativeCurrency: 'eth',
             priceFeed: {
@@ -105,7 +105,7 @@
             },
         },
         [`0x${BigInt('${CL_CCIP_CHAIN_SELECTOR_ARBITRUM}').toString(16)}`]: {
-            urls: ['https://arbitrum-rpc.publicnode.com', 'https://rpc.ankr.com/arbitrum'],
+            urls: ['https://arbitrum-rpc.publicnode.com'],
             chainId: '0xa4b1',
             nativeCurrency: 'eth',
             priceFeed: {
@@ -116,7 +116,7 @@
             },
         },
         [`0x${BigInt('${CL_CCIP_CHAIN_SELECTOR_POLYGON}').toString(16)}`]: {
-            urls: ['https://polygon-bor-rpc.publicnode.com', 'https://rpc.ankr.com/polygon'],
+            urls: ['https://polygon-bor-rpc.publicnode.com'],
             chainId: '0x89',
             nativeCurrency: 'matic',
             priceFeed: {
@@ -129,7 +129,7 @@
             },
         },
         [`0x${BigInt('${CL_CCIP_CHAIN_SELECTOR_AVALANCHE}').toString(16)}`]: {
-            urls: ['https://avalanche-c-chain-rpc.publicnode.com', 'https://rpc.ankr.com/avalanche'],
+            urls: ['https://avalanche-c-chain-rpc.publicnode.com'],
             chainId: '0xa86a',
             nativeCurrency: 'avax',
             priceFeed: {
@@ -142,7 +142,7 @@
             },
         },
         [`0x${BigInt('${CL_CCIP_CHAIN_SELECTOR_OPTIMISM}').toString(16)}`]: {
-            urls: ['https://optimism-rpc.publicnode.com', 'https://rpc.ankr.com/optimism'],
+            urls: ['https://optimism-rpc.publicnode.com'],
             chainId: '0xa',
             nativeCurrency: 'eth',
             priceFeed: {
