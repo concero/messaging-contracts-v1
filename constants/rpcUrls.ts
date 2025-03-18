@@ -1,7 +1,7 @@
 export const rpcUrls: Record<string, string[]> = {
     ethereum: ["https://rpc.ankr.com/eth"],
     sepolia: ["https://rpc.ankr.com/eth_sepolia"],
-    avalanche: ["https://avalanche.drpc.org", "https://rpc.ankr.com/avalanche"],
+    avalanche: ["https://avalanche-c-chain-rpc.publicnode.com","https://rpc.ankr.com/avalanche"],
     avalancheFuji: ["https://avalanche-fuji-c-chain-rpc.publicnode.com"],
     arbitrum: [
         "https://arbitrum.blockpi.network/v1/rpc/public",
