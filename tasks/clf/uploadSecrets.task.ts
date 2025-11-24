@@ -1,9 +1,9 @@
-import { task, types } from "hardhat/config"
+import { task } from "hardhat/config"
 import { SecretsManager } from "@chainlink/functions-toolkit"
 import { HardhatRuntimeEnvironment } from "hardhat/types"
 import { CNetwork, CNetworkNames } from "../../types/CNetwork"
 import { getEthersSignerAndProvider } from "../../utils/getEthersSignerAndProvider"
-import { clfSecrets } from "../../constants/clfSecrets"
+import { CLF_SECRETS_MAINNET_EXPIRATION, clfSecrets } from "../../constants/clfSecrets"
 import { err, log } from "../../utils/log"
 import { listClfSecrets } from "./listClfSecrets"
 import updateEnvVariable from "../../utils/updateEnvVariable"
@@ -61,15 +61,14 @@ task("clf-secrets-upload", "Encrypts and uploads secrets to the DON")
         "slotid",
         "Storage slot number 0 or higher - if the slotid is already in use, the existing secrets for that slotid will be overwritten",
     )
-    .addOptionalParam("ttl", "Time to live - minutes until the secrets hosted on the DON expire", 4320, types.int)
     .addFlag("all", "Upload secrets to all networks")
     .addFlag("updatecontracts", "Update the contracts with the new secrets")
     .setAction(async taskArgs => {
         const hre: HardhatRuntimeEnvironment = require("hardhat")
-        const { slotid, ttl, all } = taskArgs
+        const { slotid, all } = taskArgs
 
         const processNetwork = async (chain: CNetwork) => {
-            await uploadClfSecrets([chain], slotid, ttl)
+            await uploadClfSecrets([chain], slotid, CLF_SECRETS_MAINNET_EXPIRATION)
         }
 
         if (all) {
