@@ -79,8 +79,9 @@ const deployConceroRouterImplementation: (
         ],
         log: true,
         autoMine: true,
-        maxFeePerGas: maxFeePerGas.toString(),
-        maxPriorityFeePerGas: maxPriorityFeePerGas.toString(),
+        // maxFeePerGas: maxFeePerGas.toString(),
+        // maxPriorityFeePerGas: maxPriorityFeePerGas.toString(),
+        gasLimit: 4_000_000,
     })) as Deployment
 
     if (live) {
